@@ -23,10 +23,6 @@ Este repositório contém a implementação em Terraform dos laboratórios do wo
 3. Execute `terraform init`, `terraform plan`, `terraform apply`.
 4. Use os scripts em `scripts/` para testar a conectividade.
 
-Perfeito! Com o conteúdo que você forneceu, vou criar uma seção de **Pré-requisitos** clara e bem organizada para o seu `README.md` raiz, seguindo sua instrução para as imagens.
-
-Aqui está o texto pronto para você copiar e colar, já formatado em Markdown:
-
 ---
 
 ## Pré-requisitos
@@ -195,5 +191,3 @@ Depois, execute `aws sts get-caller-identity` novamente para confirmar a troca.
 - Considere usar uma conta dedicada para estudos e laboratórios.
 
 ---
-
-Pronto! Com esse guia, qualquer pessoa que clonar seu repositório saberá exatamente como confirmar se está na conta certa. Se quiser, posso ajudar a integrar isso ao README de forma harmoniosa.
