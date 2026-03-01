@@ -40,3 +40,20 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# Variáveis para as subnets
+
+variable "public_subnet_cidrs" {
+  description = "Lista de CIDRs para as subnets públicas"
+  type        = list(string)
+}
+
+variable "private_subnet_cidrs" {
+  description = "Lista de CIDRs para as subnets privadas"
+  type        = list(string)
+}
+
+variable "availability_zones" {
+  description = "Lista de zonas de disponibilidade"
+  type        = list(string)
+}

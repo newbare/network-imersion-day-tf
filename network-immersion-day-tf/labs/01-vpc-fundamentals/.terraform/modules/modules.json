@@ -1,1 +1,1 @@
-{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"vpc","Source":"../../modules/vpc","Dir":"../../modules/vpc"}]}
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"network_acl","Source":"../../modules/network-acl","Dir":"../../modules/network-acl"},{"Key":"subnets","Source":"../../modules/subnets","Dir":"../../modules/subnets"},{"Key":"vpc","Source":"../../modules/vpc","Dir":"../../modules/vpc"}]}
