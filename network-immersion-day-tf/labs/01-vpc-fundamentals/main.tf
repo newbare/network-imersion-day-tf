@@ -60,3 +60,26 @@ module "network_acl" {
   #   }
   # ]
 }
+
+
+# Módulo Internet Gateway - este módulo deve ser criado antes de route-tables, pois a rota para o IGW precisa do ID do IGW
+# No tutorial, o IGW é criado depois das route tables, mas isso é apenas para mostrar que a rota pode ser criada mesmo antes do IGW existir. Na prática, é mais comum criar o IGW primeiro.
+module "igw" {
+  source = "../../modules/internet-gateway"
+
+  vpc_id = module.vpc.vpc_id
+  name   = "VPC A IGW"
+  tags   = var.tags
+}
+
+# Módulo NAT Gateway (na primeira subnet pública)
+module "nat_gateway" {
+  source = "../../modules/nat-gateway"
+
+  name      = "VPC A NATGW"
+  subnet_id = module.subnets.public_subnet_ids[0] # AZ1
+  tags      = var.tags
+}
+
+# As rotas (pública e privada) serão adicionadas depois, em um módulo separado ou via aws_route
+
