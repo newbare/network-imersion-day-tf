@@ -83,3 +83,16 @@ module "nat_gateway" {
 
 # As rotas (pública e privada) serão adicionadas depois, em um módulo separado ou via aws_route
 
+# Módulo Route Tables (com rotas para IGW e NAT)
+module "route_tables" {
+  source = "../../modules/route-tables"
+
+  vpc_id              = module.vpc.vpc_id
+  public_subnet_ids   = module.subnets.public_subnet_ids
+  private_subnet_ids  = module.subnets.private_subnet_ids
+  igw_id              = module.igw.igw_id
+  nat_gateway_id      = module.nat_gateway.nat_gateway_id
+  public_route_table_name  = "VPC A Public Route Table"
+  private_route_table_name = "VPC A Private Route Table"
+  tags                = var.tags
+}

@@ -21,3 +21,12 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   value = module.subnets.private_subnet_ids
 }
+
+# route tables
+output "public_route_table_id" {
+  value = module.route_tables.public_route_table_id
+}
+
+output "private_route_table_id" {
+  value = module.route_tables.private_route_table_id
+}
