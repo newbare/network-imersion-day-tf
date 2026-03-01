@@ -87,12 +87,43 @@ module "nat_gateway" {
 module "route_tables" {
   source = "../../modules/route-tables"
 
-  vpc_id              = module.vpc.vpc_id
-  public_subnet_ids   = module.subnets.public_subnet_ids
-  private_subnet_ids  = module.subnets.private_subnet_ids
-  igw_id              = module.igw.igw_id
-  nat_gateway_id      = module.nat_gateway.nat_gateway_id
+  vpc_id                   = module.vpc.vpc_id
+  public_subnet_ids        = module.subnets.public_subnet_ids
+  private_subnet_ids       = module.subnets.private_subnet_ids
+  igw_id                   = module.igw.igw_id
+  nat_gateway_id           = module.nat_gateway.nat_gateway_id
   public_route_table_name  = "VPC A Public Route Table"
   private_route_table_name = "VPC A Private Route Table"
-  tags                = var.tags
+  tags                     = var.tags
 }
+
+# ... (código anterior com módulos vpc, subnets, network_acl, igw, nat_gateway, route_tables)
+
+# Módulo Security Groups
+module "security_groups" {
+  source = "../../modules/security-groups"
+
+  vpc_id               = module.vpc.vpc_id
+  my_ip_cidr           = var.my_ip_cidr
+  private_subnet_cidrs = var.private_subnet_cidrs # <-- nova linha
+  public_sg_name       = "VPC A Security Group Public"
+  private_sg_name      = "VPC A Security Group Private"
+  tags                 = var.tags
+}
+
+# Módulo VPC Endpoints (Gateway para S3 e Interface para KMS)
+module "vpc_endpoints" {
+  source = "../../modules/vpc-endpoints"
+
+  vpc_id             = module.vpc.vpc_id
+  region             = var.region
+  private_subnet_ids = module.subnets.private_subnet_ids
+  security_group_ids = [module.security_groups.kms_endpoint_sg_id]
+  route_table_ids = concat(
+    [module.route_tables.public_route_table_id],
+    [module.route_tables.private_route_table_id]
+  )
+  enable_private_dns = true
+  tags               = var.tags
+}
+

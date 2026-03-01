@@ -48,12 +48,21 @@ variable "public_subnet_cidrs" {
   type        = list(string)
 }
 
-variable "private_subnet_cidrs" {
-  description = "Lista de CIDRs para as subnets privadas"
-  type        = list(string)
-}
+
 
 variable "availability_zones" {
   description = "Lista de zonas de disponibilidade"
   type        = list(string)
+}
+
+# vpc endpoints
+variable "private_subnet_cidrs" {
+  description = "Lista de CIDRs das subnets privadas"
+  type        = list(string)
+}
+
+# security groups
+variable "my_ip_cidr" {
+  description = "Seu endereço IP público no formato CIDR (ex: 187.23.45.67/32)"
+  type        = string
 }
