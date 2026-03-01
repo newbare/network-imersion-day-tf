@@ -1,1 +1,0 @@
-Detalhar aqui!
