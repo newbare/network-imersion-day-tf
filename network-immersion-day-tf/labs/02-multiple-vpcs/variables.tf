@@ -111,3 +111,33 @@ variable "tgw_dns_support" {
   type        = string
   default     = "enable"
 }
+#subnets
+variable "vpc_a_public_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets públicas da VPC A"
+  type        = list(string)
+}
+
+variable "vpc_a_private_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets privadas da VPC A"
+  type        = list(string)
+}
+
+variable "vpc_b_public_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets públicas da VPC B"
+  type        = list(string)
+}
+
+variable "vpc_b_private_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets privadas da VPC B"
+  type        = list(string)
+}
+
+variable "vpc_c_public_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets públicas da VPC C"
+  type        = list(string)
+}
+
+variable "vpc_c_private_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets privadas da VPC C"
+  type        = list(string)
+}

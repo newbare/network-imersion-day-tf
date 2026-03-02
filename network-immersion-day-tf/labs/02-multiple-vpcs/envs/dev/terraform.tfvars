@@ -15,7 +15,18 @@ vpc_c_tgw_subnet_cidrs = ["10.2.5.0/28", "10.2.5.16/28"]
 tags = {}
 
 # ... (outras variáveis)
-tgw_name               = "TGW"
-tgw_description        = "TGW for us-east-1"
-tgw_multicast_support  = "enable"   # habilitado conforme tutorial
+tgw_name              = "TGW"
+tgw_description       = "TGW for us-east-1"
+tgw_multicast_support = "enable" # habilitado conforme tutorial
 # as demais usam o default
+
+#subnets
+vpc_a_public_subnet_cidrs  = ["10.0.0.0/24", "10.0.2.0/24"]
+vpc_a_private_subnet_cidrs = ["10.0.1.0/24", "10.0.3.0/24"]
+
+vpc_b_public_subnet_cidrs  = ["10.1.0.0/24", "10.1.2.0/24"]
+vpc_b_private_subnet_cidrs = ["10.1.1.0/24", "10.1.3.0/24"]
+
+vpc_c_public_subnet_cidrs  = ["10.2.0.0/24", "10.2.2.0/24"]
+vpc_c_private_subnet_cidrs = ["10.2.1.0/24", "10.2.3.0/24"]
+
