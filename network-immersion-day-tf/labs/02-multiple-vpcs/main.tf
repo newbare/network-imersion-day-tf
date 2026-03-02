@@ -62,3 +62,34 @@ module "tgw" {
 
   tags = var.tags
 }
+
+# Anexos(attachement) VPC ao Transit Gateway
+module "tgw_attachment_vpc_a" {
+  source = "../../modules/tgw-attachment"
+
+  name               = "VPC A TGW Attachment"
+  transit_gateway_id = module.tgw.transit_gateway_id
+  vpc_id             = module.vpc_a.vpc_id
+  subnet_ids         = module.vpc_a.tgw_subnet_ids
+  tags               = var.tags
+}
+
+module "tgw_attachment_vpc_b" {
+  source = "../../modules/tgw-attachment"
+
+  name               = "VPC B TGW Attachment"
+  transit_gateway_id = module.tgw.transit_gateway_id
+  vpc_id             = module.vpc_b.vpc_id
+  subnet_ids         = module.vpc_b.tgw_subnet_ids
+  tags               = var.tags
+}
+
+module "tgw_attachment_vpc_c" {
+  source = "../../modules/tgw-attachment"
+
+  name               = "VPC C TGW Attachment"
+  transit_gateway_id = module.tgw.transit_gateway_id
+  vpc_id             = module.vpc_c.vpc_id
+  subnet_ids         = module.vpc_c.tgw_subnet_ids
+  tags               = var.tags
+}
