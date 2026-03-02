@@ -1,5 +1,7 @@
 # Networking Immersion Day - Laboratórios Terraform
 
+- [Tutorial original – AWS Networking Immersion Day](https://catalog.workshops.aws/networking/en-US)
+
 Este repositório contém a implementação em Terraform dos laboratórios do workshop **AWS Networking Immersion Day**, organizados como uma landing zone reutilizável seguindo as melhores práticas do Well-Architected Framework.
 
 ## Estrutura
