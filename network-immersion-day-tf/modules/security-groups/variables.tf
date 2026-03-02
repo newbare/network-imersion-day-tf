@@ -31,9 +31,9 @@ variable "private_sg_name" {
 }
 
 variable "private_sg_description" {
-  description = "Descrição do security group privado"
+  description = "Descricao do security group privado"
   type        = string
-  default     = "Permite ICMP apenas da instância pública"
+  default     = "Permite ICMP apenas da instancia publica" # não aceita acentos e cedilhas
 }
 
 variable "tags" {

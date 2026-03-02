@@ -1,20 +1,11 @@
 # Módulo: security-groups
-
 # modules/security-groups/main.tf
 
-# Security Group público (para instância pública) - permite ICMP do IP configurado
+# Security Group público (para instância pública) - sem regras inline
 resource "aws_security_group" "public" {
   name        = var.public_sg_name
   description = var.public_sg_description
   vpc_id      = var.vpc_id
-
-  ingress {
-    description = "ICMP do meu IP"
-    from_port   = -1
-    to_port     = -1
-    protocol    = "icmp"
-    cidr_blocks = [var.my_ip_cidr]
-  }
 
   egress {
     from_port   = 0
@@ -28,19 +19,11 @@ resource "aws_security_group" "public" {
   })
 }
 
-# Security Group privado (para instância privada) - permite ICMP apenas do SG público
+# Security Group privado (para instância privada) - sem regras inline
 resource "aws_security_group" "private" {
   name        = var.private_sg_name
   description = var.private_sg_description
   vpc_id      = var.vpc_id
-
-  ingress {
-    description     = "ICMP do SG público"
-    from_port       = -1
-    to_port         = -1
-    protocol        = "icmp"
-    security_groups = [aws_security_group.public.id]
-  }
 
   egress {
     from_port   = 0
@@ -79,3 +62,41 @@ resource "aws_security_group" "kms_endpoint" {
     Name = "VPC A KMS Endpoint SG"
   })
 }
+
+# ─────────────────────────────────────────────────────────────────
+# Regras de ICMP entre os grupos (usando recursos separados)
+# ─────────────────────────────────────────────────────────────────
+
+# Regra 1: Grupo público permite ICMP vindo do grupo privado
+resource "aws_security_group_rule" "public_ingress_from_private" {
+  type                     = "ingress"
+  from_port                = -1
+  to_port                  = -1
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.public.id
+  source_security_group_id = aws_security_group.private.id
+  description              = "ICMP do security group privado"
+}
+
+# Regra 2: Grupo privado permite ICMP vindo do grupo público
+resource "aws_security_group_rule" "private_ingress_from_public" {
+  type                     = "ingress"
+  from_port                = -1
+  to_port                  = -1
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.private.id
+  source_security_group_id = aws_security_group.public.id
+  description              = "ICMP do security group publico"
+}
+
+# (Opcional) Regra para permitir ICMP do seu IP externo na instância pública
+resource "aws_security_group_rule" "public_ingress_from_my_ip" {
+  type              = "ingress"
+  from_port         = -1
+  to_port           = -1
+  protocol          = "icmp"
+  security_group_id = aws_security_group.public.id
+  cidr_blocks       = [var.my_ip_cidr]
+  description       = "ICMP do meu IP"
+}
+

@@ -66,3 +66,10 @@ variable "my_ip_cidr" {
   description = "Seu endereço IP público no formato CIDR (ex: 187.23.45.67/32)"
   type        = string
 }
+
+#ec2 instance
+variable "instance_type" {
+  description = "Tipo da instância EC2 (ex: t2.micro)"
+  type        = string
+  default     = "t2.micro"
+}

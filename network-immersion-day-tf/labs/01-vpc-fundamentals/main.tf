@@ -127,3 +127,56 @@ module "vpc_endpoints" {
   tags               = var.tags
 }
 
+# ... (código anterior até módulo vpc_endpoints) ...
+
+# Módulo IAM Roles
+module "iam_roles" {
+  source = "../../modules/iam-roles"
+
+  role_name             = "NetworkingWorkshopInstanceRole-${var.environment}"
+  instance_profile_name = "NetworkingWorkshopInstanceProfile-${var.environment}"
+  tags                  = var.tags
+}
+
+# Data source da AMI Amazon Linux 2023
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+}
+
+# Instância pública (AZ2)
+module "ec2_public" {
+  source = "../../modules/ec2-instance"
+
+  name                   = "VPC A Public AZ2 Server"
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.instance_type
+  subnet_id              = module.subnets.public_subnet_ids[1] # AZ2
+  private_ip             = "10.0.2.100"
+  vpc_security_group_ids = [module.security_groups.public_sg_id]
+  iam_instance_profile   = module.iam_roles.instance_profile_name
+  associate_public_ip    = true
+  user_data              = file("${path.module}/user_data.sh")
+  tags                   = var.tags
+}
+
+# Instância privada (AZ1)
+module "ec2_private" {
+  source = "../../modules/ec2-instance"
+
+  name                   = "VPC A Private AZ1 Server"
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.instance_type
+  subnet_id              = module.subnets.private_subnet_ids[0] # AZ1
+  private_ip             = "10.0.1.100"
+  vpc_security_group_ids = [module.security_groups.private_sg_id]
+  iam_instance_profile   = module.iam_roles.instance_profile_name
+  associate_public_ip    = false
+  user_data              = file("${path.module}/user_data.sh")
+  tags                   = var.tags
+}
