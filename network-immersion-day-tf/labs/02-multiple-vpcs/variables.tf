@@ -141,3 +141,13 @@ variable "vpc_c_private_subnet_cidrs" {
   description = "Lista de CIDRs para subnets privadas da VPC C"
   type        = list(string)
 }
+# iam role
+variable "iam_role_name" {
+  description = "Nome da IAM Role para as instâncias do Lab02"
+  type        = string
+}
+
+variable "iam_instance_profile_name" {
+  description = "Nome do Instance Profile para o Lab02"
+  type        = string
+}

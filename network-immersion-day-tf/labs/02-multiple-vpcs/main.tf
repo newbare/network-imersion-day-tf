@@ -202,3 +202,11 @@ module "tgw_routes_vpc_c" {
     { destination = var.vpc_b_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
   ]
 }
+#iam roles
+module "iam_roles" {
+  source = "../../modules/iam-roles"
+
+  role_name             = "NetworkingWorkshopInstanceRole-lab2-dev"
+  instance_profile_name = "NetworkingWorkshopInstanceProfile-lab2-dev"
+  tags                  = var.tags
+}

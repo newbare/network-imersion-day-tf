@@ -30,3 +30,6 @@ vpc_b_private_subnet_cidrs = ["10.1.1.0/24", "10.1.3.0/24"]
 vpc_c_public_subnet_cidrs  = ["10.2.0.0/24", "10.2.2.0/24"]
 vpc_c_private_subnet_cidrs = ["10.2.1.0/24", "10.2.3.0/24"]
 
+# iam role
+iam_role_name             = "NetworkingWorkshopInstanceRole-lab2-dev"
+iam_instance_profile_name = "NetworkingWorkshopInstanceProfile-lab2-dev"
