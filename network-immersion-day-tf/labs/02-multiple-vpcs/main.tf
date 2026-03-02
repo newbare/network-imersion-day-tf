@@ -171,3 +171,34 @@ module "route_tables_c" {
   private_route_table_name = "VPC C Private Route Table"
   tags                     = var.tags
 }
+
+# Rotas para o TGW nas tabelas privadas de cada VPC
+module "tgw_routes_vpc_a" {
+  source = "../../modules/tgw-routes-tables"
+
+  route_table_id = module.route_tables_a.private_route_table_id
+  routes = [
+    { destination = var.vpc_b_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+    { destination = var.vpc_c_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+  ]
+}
+
+module "tgw_routes_vpc_b" {
+  source = "../../modules/tgw-routes-tables"
+
+  route_table_id = module.route_tables_b.private_route_table_id
+  routes = [
+    { destination = var.vpc_a_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+    { destination = var.vpc_c_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+  ]
+}
+
+module "tgw_routes_vpc_c" {
+  source = "../../modules/tgw-routes-tables"
+
+  route_table_id = module.route_tables_c.private_route_table_id
+  routes = [
+    { destination = var.vpc_a_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+    { destination = var.vpc_b_cidr, transit_gateway_id = module.tgw.transit_gateway_id },
+  ]
+}
