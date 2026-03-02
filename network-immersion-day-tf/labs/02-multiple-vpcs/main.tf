@@ -210,3 +210,66 @@ module "iam_roles" {
   instance_profile_name = "NetworkingWorkshopInstanceProfile-lab2-dev"
   tags                  = var.tags
 }
+
+# Security Group para VPC A (permite ICMP de VPC B e VPC C)
+module "sg_vpc_a" {
+  source = "../../modules/security-groups-lab2"
+
+  name        = "VPC A Test SG"
+  description = "Permite ICMP de VPC B e VPC C"
+  vpc_id      = module.vpc_a.vpc_id
+
+  ingress_rules = [
+    {
+      from_port   = -1
+      to_port     = -1
+      protocol    = "icmp"
+      cidr_blocks = [var.vpc_b_cidr, var.vpc_c_cidr]
+      description = "ICMP from VPC B and VPC C"
+    }
+  ]
+
+  tags = var.tags
+}
+
+# Security Group para VPC B (permite ICMP de VPC A e VPC C)
+module "sg_vpc_b" {
+  source = "../../modules/security-groups-lab2"
+
+  name        = "VPC B Test SG"
+  description = "Permite ICMP de VPC A e VPC C"
+  vpc_id      = module.vpc_b.vpc_id
+
+  ingress_rules = [
+    {
+      from_port   = -1
+      to_port     = -1
+      protocol    = "icmp"
+      cidr_blocks = [var.vpc_a_cidr, var.vpc_c_cidr]
+      description = "ICMP from VPC A and VPC C"
+    }
+  ]
+
+  tags = var.tags
+}
+
+# Security Group para VPC C (permite ICMP de VPC A e VPC B)
+module "sg_vpc_c" {
+  source = "../../modules/security-groups-lab2"
+
+  name        = "VPC C Test SG"
+  description = "Permite ICMP de VPC A e VPC B"
+  vpc_id      = module.vpc_c.vpc_id
+
+  ingress_rules = [
+    {
+      from_port   = -1
+      to_port     = -1
+      protocol    = "icmp"
+      cidr_blocks = [var.vpc_a_cidr, var.vpc_b_cidr]
+      description = "ICMP from VPC A and VPC B"
+    }
+  ]
+
+  tags = var.tags
+}
