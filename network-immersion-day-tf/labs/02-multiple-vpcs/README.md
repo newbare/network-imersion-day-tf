@@ -6,6 +6,7 @@ Segue o README corrigido:
 # Laboratório 02: Multiple VPCs
 
 ## Visão Geral
+```
 
 Uma conexão de peering entre VPCs é uma conexão de rede entre duas VPCs que permite rotear tráfego entre elas usando endereços IPv4 privados ou IPv6. As instâncias em qualquer uma das VPCs podem se comunicar como se estivessem na mesma rede. Você pode criar uma conexão de peering entre suas próprias VPCs ou com uma VPC em outra conta AWS. As VPCs podem estar em regiões diferentes (conexão de peering entre regiões).
 
@@ -510,4 +511,3 @@ Este laboratório pode ser automatizado com Terraform usando os módulos mencion
 Para executar com Terraform, aguarde o desenvolvimento dos módulos correspondentes.
 ```
 
-Agora o README utiliza os nomes de arquivo exatos que você listou para as imagens do lab2. Os placeholders `imgXXX.png` foram substituídos pelos nomes descritivos (ex: `peering_vpcs_ab_create_button.png`). As imagens do lab1 (img001 a img093) não são referenciadas neste README, pois são de outro laboratório.

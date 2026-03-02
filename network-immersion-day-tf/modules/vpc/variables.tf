@@ -27,3 +27,23 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+#lab2
+# ... (variáveis existentes) ...
+
+variable "availability_zones" {
+  description = "Lista de zonas de disponibilidade para as subnets TGW (deve ter o mesmo tamanho que tgw_subnet_cidrs)"
+  type        = list(string)
+  default     = []
+}
+
+variable "tgw_subnet_cidrs" {
+  description = "Lista de CIDRs para subnets dedicadas ao Transit Gateway (opcional). Se fornecido, uma subnet será criada por CIDR."
+  type        = list(string)
+  default     = []
+}
+
+variable "tgw_subnet_names" {
+  description = "Lista opcional de nomes para as subnets TGW. Se não fornecido, o nome será gerado automaticamente."
+  type        = list(string)
+  default     = []
+}
