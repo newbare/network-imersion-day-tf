@@ -95,3 +95,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# variable "private_subnet_cidrs" {
+#   description = "Lista de todos os CIDRs das subnets privadas (de todas as VPCs)"
+#   type        = list(string)
+#   default     = [] # será preenchido no terraform.tfvars
+# }

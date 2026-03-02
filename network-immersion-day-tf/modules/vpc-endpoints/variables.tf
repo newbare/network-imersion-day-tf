@@ -37,3 +37,32 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+
+# Variáveis para endpoints de interface adicionais (lab2.1)
+variable "interface_endpoints" {
+  description = "Mapa de endpoints de interface. Cada entrada deve conter service_name, name, e opcionalmente security_group_ids e private_dns_enabled."
+  type = map(object({
+    service_name        = string
+    name                = string
+    security_group_ids  = optional(list(string))
+    private_dns_enabled = optional(bool)
+  }))
+  default = {}
+}
+
+variable "gateway_endpoints" {
+  description = "Mapa de endpoints de gateway. Cada entrada deve conter service_name, name, e opcionalmente route_table_ids."
+  type = map(object({
+    service_name    = string
+    name            = string
+    route_table_ids = optional(list(string))
+  }))
+  default = {}
+}
+
+variable "create_legacy_endpoints" {
+  description = "Se true, cria os endpoints fixos KMS e S3 (para compatibilidade com Lab1)"
+  type        = bool
+  default     = false # Padrão falso para não afetar labs novos
+}

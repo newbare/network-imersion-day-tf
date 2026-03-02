@@ -314,3 +314,173 @@ module "peering_routes_c_to_a" {
   depends_on = [module.vpc_peering_ac, module.route_tables_c]
 
 }
+
+# Security Group para endpoints de interface (SSM, KMS, etc.)
+# Security Group para endpoints da VPC A
+module "sg_endpoints_a" {
+  source      = "../../modules/security-groups-lab2"
+  name        = "VPC A Endpoints SG"
+  description = "Permite HTTPS das subnets privadas da VPC A"
+  vpc_id      = module.vpc_a.vpc_id
+  ingress_rules = [
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = var.vpc_a_private_subnet_cidrs
+      description = "HTTPS from private subnets of VPC A"
+    }
+  ]
+  tags = var.tags
+}
+
+# Security Group para endpoints da VPC B
+module "sg_endpoints_b" {
+  source      = "../../modules/security-groups-lab2"
+  name        = "VPC B Endpoints SG"
+  description = "Permite HTTPS das subnets privadas da VPC B"
+  vpc_id      = module.vpc_b.vpc_id
+  ingress_rules = [
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = var.vpc_b_private_subnet_cidrs
+      description = "HTTPS from private subnets of VPC B"
+    }
+  ]
+  tags = var.tags
+}
+
+# Security Group para endpoints da VPC C
+module "sg_endpoints_c" {
+  source      = "../../modules/security-groups-lab2"
+  name        = "VPC C Endpoints SG"
+  description = "Permite HTTPS das subnets privadas da VPC C"
+  vpc_id      = module.vpc_c.vpc_id
+  ingress_rules = [
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = var.vpc_c_private_subnet_cidrs
+      description = "HTTPS from private subnets of VPC C"
+    }
+  ]
+  tags = var.tags
+}
+
+module "vpc_endpoints_a" {
+  source = "../../modules/vpc-endpoints"
+
+  vpc_id             = module.vpc_a.vpc_id
+  region             = var.region
+  private_subnet_ids = module.subnets_a.private_subnet_ids
+  route_table_ids    = [module.route_tables_a.public_route_table_id, module.route_tables_a.private_route_table_id]
+  security_group_ids = [module.sg_endpoints_a.security_group_id]
+
+  interface_endpoints = {
+    ssm = {
+      service_name = "com.amazonaws.${var.region}.ssm"
+      name         = "SSM Endpoint A"
+    }
+    ssmmessages = {
+      service_name = "com.amazonaws.${var.region}.ssmmessages"
+      name         = "SSM Messages Endpoint A"
+    }
+    ec2messages = {
+      service_name = "com.amazonaws.${var.region}.ec2messages"
+      name         = "EC2 Messages Endpoint A"
+    }
+    kms = {
+      service_name = "com.amazonaws.${var.region}.kms"
+      name         = "KMS Endpoint A"
+    }
+  }
+
+  gateway_endpoints = {
+    s3 = {
+      service_name = "com.amazonaws.${var.region}.s3"
+      name         = "S3 Gateway Endpoint A"
+    }
+  }
+
+  tags = var.tags
+}
+
+module "vpc_endpoints_b" {
+  source = "../../modules/vpc-endpoints"
+
+  vpc_id             = module.vpc_b.vpc_id
+  region             = var.region
+  private_subnet_ids = module.subnets_b.private_subnet_ids
+  route_table_ids    = [module.route_tables_b.public_route_table_id, module.route_tables_b.private_route_table_id]
+  security_group_ids = [module.sg_endpoints_b.security_group_id]
+
+  interface_endpoints = {
+    ssm = {
+      service_name = "com.amazonaws.${var.region}.ssm"
+      name         = "SSM Endpoint B"
+    }
+    ssmmessages = {
+      service_name = "com.amazonaws.${var.region}.ssmmessages"
+      name         = "SSM Messages Endpoint B"
+    }
+    ec2messages = {
+      service_name = "com.amazonaws.${var.region}.ec2messages"
+      name         = "EC2 Messages Endpoint B"
+    }
+    kms = {
+      service_name = "com.amazonaws.${var.region}.kms"
+      name         = "KMS Endpoint B"
+    }
+  }
+
+  gateway_endpoints = {
+    s3 = {
+      service_name = "com.amazonaws.${var.region}.s3"
+      name         = "S3 Gateway Endpoint B"
+    }
+  }
+
+  tags = var.tags
+}
+
+module "vpc_endpoints_c" {
+  source = "../../modules/vpc-endpoints"
+
+  vpc_id             = module.vpc_c.vpc_id
+  region             = var.region
+  private_subnet_ids = module.subnets_c.private_subnet_ids
+  route_table_ids    = [module.route_tables_c.public_route_table_id, module.route_tables_c.private_route_table_id]
+  security_group_ids = [module.sg_endpoints_c.security_group_id]
+
+  interface_endpoints = {
+    ssm = {
+      service_name = "com.amazonaws.${var.region}.ssm"
+      name         = "SSM Endpoint C"
+    }
+    ssmmessages = {
+      service_name = "com.amazonaws.${var.region}.ssmmessages"
+      name         = "SSM Messages Endpoint C"
+    }
+    ec2messages = {
+      service_name = "com.amazonaws.${var.region}.ec2messages"
+      name         = "EC2 Messages Endpoint C"
+    }
+    kms = {
+      service_name = "com.amazonaws.${var.region}.kms"
+      name         = "KMS Endpoint C"
+    }
+  }
+
+  gateway_endpoints = {
+    s3 = {
+      service_name = "com.amazonaws.${var.region}.s3"
+      name         = "S3 Gateway Endpoint C"
+    }
+  }
+
+  tags = var.tags
+}
+

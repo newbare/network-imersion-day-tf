@@ -7,11 +7,11 @@ environment = "dev"
 region      = "us-east-1"
 
 # Variáveis específicas para a VPC
-vpc_name             = "VPC A"
-vpc_cidr             = "10.0.0.0/16"
-enable_dns_hostnames = true
-enable_dns_support   = true
-
+vpc_name                = "VPC A"
+vpc_cidr                = "10.0.0.0/16"
+enable_dns_hostnames    = true
+enable_dns_support      = true
+create_legacy_endpoints = true # Para criar os endpoints KMS e S3 fixos do Lab1 (opcional para Lab2)
 
 # Subnets
 public_subnet_cidrs  = ["10.0.0.0/24", "10.0.2.0/24"]

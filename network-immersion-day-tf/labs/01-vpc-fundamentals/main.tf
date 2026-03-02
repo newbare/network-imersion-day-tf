@@ -123,8 +123,10 @@ module "vpc_endpoints" {
     [module.route_tables.public_route_table_id],
     [module.route_tables.private_route_table_id]
   )
-  enable_private_dns = true
-  tags               = var.tags
+  enable_private_dns      = true
+  create_legacy_endpoints = var.create_legacy_endpoints # <-- ativa os endpoints fixos
+
+  tags = var.tags
 }
 
 # ... (código anterior até módulo vpc_endpoints) ...

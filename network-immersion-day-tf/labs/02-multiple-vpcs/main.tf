@@ -292,7 +292,7 @@ module "ec2_a" {
   name                   = "VPC A Private AZ1 Server"
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = var.instance_type
-  subnet_id              = module.subnets_a.private_subnet_ids[0]  # primeira subnet privada (AZ1)
+  subnet_id              = module.subnets_a.private_subnet_ids[0] # primeira subnet privada (AZ1)
   private_ip             = var.vpc_a_test_instance_ip
   vpc_security_group_ids = [module.sg_vpc_a.security_group_id]
   iam_instance_profile   = module.iam_roles.instance_profile_name

@@ -73,3 +73,9 @@ variable "instance_type" {
   type        = string
   default     = "t2.micro"
 }
+
+variable "create_legacy_endpoints" {
+  description = "Se true, cria os endpoints fixos KMS e S3 (para compatibilidade com Lab1)"
+  type        = bool
+  default     = false   # Padrão falso para não afetar labs novos
+}
