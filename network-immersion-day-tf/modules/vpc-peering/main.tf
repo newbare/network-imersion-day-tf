@@ -1,4 +1,4 @@
-# Módulo: vpc-peering
+# Módulo: vpc-peering/main.tf
 
 resource "aws_vpc_peering_connection" "this" {
   for_each = var.peering_connections

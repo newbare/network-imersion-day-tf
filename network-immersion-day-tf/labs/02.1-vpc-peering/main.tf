@@ -270,6 +270,8 @@ module "peering_routes_a_to_b" {
       destination_cidr = var.vpc_b_cidr
     }
   }
+  depends_on = [module.vpc_peering_ab, module.route_tables_a]
+
 }
 
 module "peering_routes_a_to_c" {
@@ -282,6 +284,8 @@ module "peering_routes_a_to_c" {
       destination_cidr = var.vpc_c_cidr
     }
   }
+  depends_on = [module.vpc_peering_ac, module.route_tables_a]
+
 }
 
 module "peering_routes_b_to_a" {
@@ -294,6 +298,7 @@ module "peering_routes_b_to_a" {
       destination_cidr = var.vpc_a_cidr
     }
   }
+  depends_on = [module.vpc_peering_ab, module.route_tables_b]
 }
 
 module "peering_routes_c_to_a" {
@@ -306,4 +311,6 @@ module "peering_routes_c_to_a" {
       destination_cidr = var.vpc_a_cidr
     }
   }
+  depends_on = [module.vpc_peering_ac, module.route_tables_c]
+
 }

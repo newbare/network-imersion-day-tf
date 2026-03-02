@@ -1,4 +1,4 @@
-# Outputs do módulo vpc-peering
+# Outputs do módulo vpc-peering/outputs.tf
 
 output "peering_ids" {
   description = "Mapa dos IDs das conexões de peering criadas."
