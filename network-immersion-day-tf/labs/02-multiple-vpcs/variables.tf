@@ -56,3 +56,58 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# Transit Gateway (opcional)
+variable "tgw_name" {
+  description = "Nome do Transit Gateway"
+  type        = string
+  default     = "TGW"
+}
+
+variable "tgw_description" {
+  description = "Descrição do Transit Gateway"
+  type        = string
+  default     = "TGW for us-east-1"
+}
+
+variable "tgw_multicast_support" {
+  description = "Habilitar suporte a multicast (enable/disable)"
+  type        = string
+  default     = "disable"
+}
+
+variable "tgw_amazon_side_asn" {
+  description = "Número ASN privado"
+  type        = number
+  default     = 64512
+}
+
+variable "tgw_auto_accept_shared_attachments" {
+  description = "Auto aceitar anexos compartilhados"
+  type        = string
+  default     = "disable"
+}
+
+variable "tgw_default_route_table_association" {
+  description = "Associar automaticamente à tabela padrão"
+  type        = string
+  default     = "enable"
+}
+
+variable "tgw_default_route_table_propagation" {
+  description = "Propagar automaticamente à tabela padrão"
+  type        = string
+  default     = "enable"
+}
+
+variable "tgw_vpn_ecmp_support" {
+  description = "Suporte a ECMP para VPN"
+  type        = string
+  default     = "enable"
+}
+
+variable "tgw_dns_support" {
+  description = "Suporte a DNS"
+  type        = string
+  default     = "enable"
+}
