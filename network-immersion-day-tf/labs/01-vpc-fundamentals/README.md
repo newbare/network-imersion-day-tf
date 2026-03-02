@@ -776,3 +776,102 @@ Parabéns! Você implementou com sucesso os fundamentos de rede na AWS usando Te
 
 ```
 
+====================================================================================================
+                    ARQUITETURA REAL DO LABORATÓRIO 01 – VPC FUNDAMENTALS
+====================================================================================================
+
+                                    ┌─────────────────────────────────────┐
+                                    │              INTERNET               │
+                                    └────────────────┬────────────────────┘
+                                                     │
+                                                     ▼
+                                    ┌─────────────────────────────────────┐
+                                    │   Internet Gateway (IGW)             │
+                                    │   ID: igw-05991233a9266e473          │
+                                    └────────────────┬────────────────────┘
+                                                     │
+              ┌──────────────────────────────────────┼──────────────────────────────────────┐
+              │                                      │                                      │
+              ▼                                      ▼                                      ▼
+┌─────────────────────────────┐          ┌─────────────────────────────┐          ┌─────────────────────────────┐
+│ Tabela de Rotas Pública     │          │ Tabela de Rotas Privada     │          │ Tabela de Rotas Principal   │
+│ ID: rtb-01275655b075fdbcc   │          │ ID: rtb-0fe1db938d04a437d   │          │ ID: rtb-035ff91eab7ca5321   │
+│ 0.0.0.0/0 → igw-05991233a...│          │ 0.0.0.0/0 → nat-00c456baf...│          │ (não usada)                  │
+└──────────────┬──────────────┘          └──────────────┬──────────────┘          └─────────────────────────────┘
+               │                                        │
+               │ associação                             │ associação
+     ┌─────────┴─────────┐                   ┌─────────┴─────────┐
+     │                   │                   │                   │
+     ▼                   ▼                   ▼                   ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│ Subnet Pública│  │ Subnet Pública│  │Subnet Privada │  │Subnet Privada │
+│   us-east-1a  │  │   us-east-1b  │  │   us-east-1a  │  │   us-east-1b  │
+│ ID: subnet-0c │  │ ID: subnet-0f │  │ ID: subnet-0d │  │ ID: subnet-06 │
+│ b885209e4e8312│  │ 208ae5bac34871│  │ 75082e276638c3│  │ 8924a46e963fd2│
+│ 2             │  │ 8             │  │ 0             │  │ 9             │
+│ CIDR 10.0.0.0/2│  │ CIDR 10.0.2.0/2│  │ CIDR 10.0.1.0/2│  │ CIDR 10.0.3.0/2│
+│ 4             │  │ 4             │  │ 4             │  │ 4             │
+│ (pública)     │  │ (pública)     │  │ (privada)     │  │ (privada)     │
+└───────┬───────┘  └───────┬───────┘  └───────┬───────┘  └───────┬───────┘
+        │                  │                    │ (NAT)            │
+        │                  │                    └────────┬─────────┘
+        │                  │                             │
+        │                  │                    ┌────────▼─────────┐
+        │                  │                    │   NAT Gateway    │
+        │                  │                    │ ID: nat-00c456baf│
+        │                  │                    │ 615dadd4         │
+        │                  │                    │ (subnet pública  │
+        │                  │                    │  us-east-1a)     │
+        │                  │                    │ IP privado:      │
+        │                  │                    │ 10.0.0.10        │
+        │                  │                    │ IP público:      │
+        │                  │                    │ 100.50.234.157   │
+        │                  │                    └────────┬─────────┘
+        │                  │                             │
+┌───────▼───────┐  ┌───────▼───────┐  ┌───────────────────▼────────────────────┐
+│ Instância EC2 │  │ Instância EC2 │  │           VPC Endpoints                 │
+│   Pública     │  │   Privada     │  ├─────────────────┬──────────────────────┤
+│   us-east-1b  │  │   us-east-1a  │  │ Interface KMS   │ Gateway S3           │
+│   ID: i-08ad7 │  │   ID: i-01bd9 │  │ ID: vpce-0fa71 │ ID: vpce-01a60       │
+│   7ae96c4df139│  │   16d4fe4d9d89│  │ 78160955231d    │ ee70fa2577ee         │
+│   IP priv:    │  │   IP priv:    │  │ (subnets priv.) │ (tabelas: pública e  │
+│   10.0.2.100  │  │   10.0.1.100  │  │                 │  privada)            │
+│   IP púb:     │  │   Security    │  │   SG associado: │   Prefix List:       │
+│   44.201.84.39│  │   Group:      │  │   sg-0c7266bb7  │   pl-63a5400a        │
+│   Security    │  │   sg-03d0e41d0│  │   26ba012b      │                      │
+│   Group:      │◄─┼─► 263c80ea    │  └────────┬────────┴──────────┬───────────┘
+│   sg-05e3f5429│  │               │           │                    │
+│   da8f7a88    │  └───────────────┘           │ (HTTPS)            │ (S3 API)
+│               │                               │                    │
+└───────────────┘                               ▼                    ▼
+                                         ┌─────────────┐      ┌─────────────┐
+                                         │   AWS KMS   │      │ Amazon S3   │
+                                         │  (serviço)  │      │ (serviço)   │
+                                         └─────────────┘      └─────────────┘
+
+                 ┌─────────────────────────────────────────────────────────────┐
+                 │  IAM Role: NetworkingWorkshopInstanceRole-dev               │
+                 │  Instance Profile: NetworkingWorkshopInstanceProfile-dev    │
+                 │  Políticas anexadas: AmazonSSMManagedInstanceCore,          │
+                 │  AmazonS3FullAccess                                          │
+                 └─────────────────────────────────────────────────────────────┘
+
+                 ┌─────────────────────────────────────────────────────────────┐
+                 │  Network ACL (NACL): acl-07030f5b652847a75                  │
+                 │  Associada a todas as 4 subnets. Regras: permitir todo      │
+                 │  tráfego inbound/outbound (0.0.0.0/0, protocolo -1).        │
+                 └─────────────────────────────────────────────────────────────┘
+
+====================================================================================================
+                                    LEGENDA
+====================================================================================================
+- VPC ID: vpc-0b53171a73a81aa2b (10.0.0.0/16)
+- Setas indicam direção do tráfego ou associação.
+- A instância privada acessa a internet via NAT Gateway (10.0.0.10 → 100.50.234.157).
+- A instância pública tem IP público 44.201.84.39, com security group sg-05e3f5429da8f7a88.
+- O security group privado (sg-03d0e41d0263c80ea) permite ICMP do público (regra criada).
+- O security group público permite ICMP do IP 177.40.221.6/32 (seu IP) e do grupo privado.
+- O endpoint KMS tem IPs 10.0.1.173 e 10.0.3.4 nas subnets privadas.
+- O endpoint S3 adiciona rotas nas tabelas pública e privada para o prefix list do S3.
+- O Session Manager funciona graças à IAM role e à política AmazonSSMManagedInstanceCore.
+====================================================================================================
