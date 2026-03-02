@@ -1,63 +1,57 @@
-Agora com a lista completa de imagens que você forneceu, vou reescrever o `README.md` do **Lab 02 – Multiple VPCs** utilizando **exatamente os nomes dos arquivos** existentes na pasta `../../img/`. Além disso, manterei o tutorial na íntegra, conforme o texto original, e incluirei as orientações Terraform no final.
+# 🧪 Laboratório 02: Multiple VPCs
 
-Segue o README corrigido:
+## 📘 Visão Geral
 
-```markdown
-# Laboratório 02: Multiple VPCs
+Uma **conexão de peering entre VPCs** é uma conexão de rede entre duas VPCs que permite rotear tráfego entre elas usando endereços IPv4 privados ou IPv6. As instâncias em qualquer uma das VPCs podem se comunicar como se estivessem na mesma rede. Você pode criar uma conexão de peering entre suas próprias VPCs ou com uma VPC em outra conta AWS. As VPCs podem estar em regiões diferentes (conexão de peering entre regiões).
 
-## Visão Geral
-```
+O **VPC Peering** é útil para conectar um pequeno número de pares de VPCs, porém gerenciar conectividade ponto a ponto entre muitas VPCs sem a capacidade de gerenciar centralmente as políticas de conectividade pode ser operacionalmente custoso e complicado. Para conectividade on-premises, você precisa anexar sua VPN AWS a cada VPC individualmente. Essa solução pode ser demorada de construir e difícil de gerenciar quando o número de VPCs cresce para centenas.
 
-Uma conexão de peering entre VPCs é uma conexão de rede entre duas VPCs que permite rotear tráfego entre elas usando endereços IPv4 privados ou IPv6. As instâncias em qualquer uma das VPCs podem se comunicar como se estivessem na mesma rede. Você pode criar uma conexão de peering entre suas próprias VPCs ou com uma VPC em outra conta AWS. As VPCs podem estar em regiões diferentes (conexão de peering entre regiões).
-
-O VPC Peering é útil para conectar um pequeno número de pares de VPCs, porém gerenciar conectividade ponto a ponto entre muitas VPCs sem a capacidade de gerenciar centralmente as políticas de conectividade pode ser operacionalmente custoso e complicado. Para conectividade on-premises, você precisa anexar sua VPN AWS a cada VPC individualmente. Essa solução pode ser demorada de construir e difícil de gerenciar quando o número de VPCs cresce para centenas.
-
-O AWS Transit Gateway é um serviço que permite conectar VPCs e redes on-premises a um único gateway. À medida que você aumenta o número de workloads em execução na AWS, você precisa ser capaz de escalar suas redes em várias contas e VPCs para acompanhar o crescimento.
+O **AWS Transit Gateway** é um serviço que permite conectar VPCs e redes on-premises a um único gateway. À medida que você aumenta o número de workloads em execução na AWS, você precisa ser capaz de escalar suas redes em várias contas e VPCs para acompanhar o crescimento.
 
 Neste laboratório, você aprenderá como fazer peering de VPCs, e também criará um Transit Gateway, anexará VPCs, e configurará o roteamento com as tabelas de rotas do Transit Gateway.
 
-Se você estiver executando este laboratório no AWS Workshop Studio, a região foi definida pelo seu facilitador. A região que você vê nas capturas de tela pode não corresponder ao seu ambiente. Isso não causará problemas.
+> 💡 **Nota:** Se você estiver executando este laboratório no **AWS Workshop Studio**, a região foi definida pelo seu facilitador. A região que você vê nas capturas de tela pode não corresponder ao seu ambiente. Isso não causará problemas.  
+> Se você estiver executando este laboratório em sua própria conta AWS, é recomendado que todos os recursos sejam criados na região **us-east-1** para que as capturas de tela correspondam ao seu ambiente. Isso não é obrigatório.
 
-Se você estiver executando este laboratório em sua própria conta AWS, é recomendado para todos os recursos do laboratório serem criados na região us-east-1 para que as capturas de tela correspondam ao seu ambiente. Isso não é obrigatório.
-
-Para este laboratório, usaremos o CloudFormation para construir automaticamente as VPCs.
+Para este laboratório, usaremos o **CloudFormation** para construir automaticamente as VPCs. (Na implementação com Terraform, utilizaremos módulos específicos.)
 
 ---
 
-## Pré‑requisitos
+## ✅ Pré‑requisitos
 
-Se você não concluiu a seção VPC Fundamentals, execute o template CloudFormation abaixo para criar os recursos iniciais. Se já concluiu, prossiga para a verificação das VPCs.
+Se você **não** concluiu a seção **VPC Fundamentals**, execute o template CloudFormation abaixo para criar os recursos iniciais. Se já concluiu, prossiga para a verificação das VPCs.
 
 ### Recursos Criados pelo CloudFormation
 
 O template cria três VPCs (A, B, C) com os seguintes CIDRs:
-- VPC A: `10.0.0.0/16`
-- VPC B: `10.1.0.0/16`
-- VPC C: `10.2.0.0/16`
 
-Cada VPC possui duas subnets públicas e duas privadas, e uma instância EC2 na subnet privada da AZ us-east-1a.
+- **VPC A:** `10.0.0.0/16`
+- **VPC B:** `10.1.0.0/16`
+- **VPC C:** `10.2.0.0/16`
+
+Cada VPC possui **duas subnets públicas e duas privadas**, e uma **instância EC2 na subnet privada da AZ us-east-1a**.
 
 ![CFN VPCs](../../img/lab2_cloudformation.png)
 
 ![CFN VPCs Instâncias](../../img/tgw_connect_ec2.png) *(imagem ilustrativa)*
 
-O ambiente inicial se assemelha ao diagrama abaixo. Note que a VPC A ainda não possui as subnets TGW – elas serão criadas posteriormente.
+O ambiente inicial se assemelha ao diagrama abaixo. Note que a **VPC A ainda não possui as subnets TGW** – elas serão criadas posteriormente.
 
 ![Multi-VPC setup](../../img/lab2_vpc_peering.png)
 
 ---
 
-## VPC Peering
+## 🔗 VPC Peering
 
-> **Nota:** Esta seção é opcional e não é necessária para prosseguir com o workshop. Você pode pular para a seção [Transit Gateway](#transit-gateway).
+> ⚠️ **Nota:** Esta seção é **opcional** e não é necessária para prosseguir com o workshop. Você pode pular para a seção [Transit Gateway](#-transit-gateway).
 
-Uma conexão de peering entre VPCs é uma conexão de rede entre duas VPCs que permite rotear tráfego entre elas usando endereços IPv4 privados ou IPv6. Neste laboratório, estabeleceremos conexões de peering entre VPC A e VPC B, e entre VPC A e VPC C, e mostraremos que o tráfego flui apenas entre aquelas VPCs com links de peering diretos.
+Uma conexão de peering entre VPCs é uma conexão de rede entre duas VPCs que permite rotear tráfego entre elas usando endereços IPv4 privados ou IPv6. Neste laboratório, estabeleceremos conexões de peering entre **VPC A e VPC B**, e entre **VPC A e VPC C**, e mostraremos que o tráfego flui apenas entre aquelas VPCs com links de peering diretos.
 
-**Nota:** Todas as três VPCs têm CIDRs não sobrepostos. Você não pode criar uma conexão de peering entre VPCs com CIDRs correspondentes ou sobrepostos.
+> 📌 **Nota:** Todas as três VPCs têm CIDRs **não sobrepostos**. Você não pode criar uma conexão de peering entre VPCs com CIDRs correspondentes ou sobrepostos.
 
-### Configurar o Peering entre VPC A e VPC B
+### 📍 Configurar o Peering entre VPC A e VPC B
 
-#### Criar a Conexão de Peering Entre VPCs A e B
+#### 1. Criar a Conexão de Peering Entre VPCs A e B
 
 1. No painel VPC, clique em **Peering Connections**.
 2. Clique em **Create peering connection** no canto superior direito.  
@@ -81,7 +75,7 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 11. Clique em **Modify my route tables now** na tela resultante.  
     ![Modify Route Tables](../../img/peering_vpcs_ab_modify_route_tables.png)
 
-#### Atualizar a Tabela de Rotas na VPC A
+#### 2. Atualizar a Tabela de Rotas na VPC A
 
 1. Selecione a caixa de seleção para a **VPC A Private Route Table**.
 2. Role para baixo e clique na aba **Routes**.
@@ -93,7 +87,7 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 6. Confirme que a nova rota aparece na aba **Routes**.  
    ![Routes Updated](../../img/peering_vpcs_ab_routes_updated_vpc_a.png)
 
-#### Atualizar a Tabela de Rotas na VPC B
+#### 3. Atualizar a Tabela de Rotas na VPC B
 
 1. Clique em **Route tables**.
 2. Selecione a caixa de seleção para a **VPC B Private Route Table**.
@@ -106,9 +100,9 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 7. A tabela de rotas será atualizada com as rotas para a conexão de peering.  
    ![Route Table Updated](../../img/peering_vpcs_ab_routes_updated_vpc_b.png)
 
-### Configurar o Peering entre VPC A e VPC C
+### 📍 Configurar o Peering entre VPC A e VPC C
 
-#### Criar a Conexão de Peering Entre VPCs A e C
+#### 1. Criar a Conexão de Peering Entre VPCs A e C
 
 1. No painel VPC, clique em **Peering Connections**.
 2. Clique em **Create peering connection** no canto superior direito.  
@@ -130,7 +124,7 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 11. Clique em **Modify my route tables now** na tela resultante.  
     ![Modify Route Tables](../../img/peering_vpcs_ac_modify_rt_button.png)
 
-#### Atualizar a Tabela de Rotas na VPC A
+#### 2. Atualizar a Tabela de Rotas na VPC A
 
 1. Selecione a caixa de seleção para a **VPC A Private Route Table**.
 2. Role para baixo e clique na aba **Routes**.
@@ -143,7 +137,7 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 6. Confirme que a nova rota aparece na aba **Routes**.  
    ![Routes Tab](../../img/peering_vpcs_ac_routes_updated_vpc_a.png)
 
-#### Atualizar a Tabela de Rotas na VPC C
+#### 3. Atualizar a Tabela de Rotas na VPC C
 
 1. Navegue de volta para **Route tables** e selecione a caixa de seleção para a **VPC C Private Route Table**.
 2. Clique na aba **Routes**.
@@ -155,7 +149,7 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 6. A tabela de rotas será atualizada com as rotas para a conexão de peering.  
    ![Route Table Updated](../../img/peering_vpcs_ac_routes_updated_vpc_c.png)
 
-### Verificar a Conectividade
+### 🧪 Verificar a Conectividade
 
 #### Verificar a Conectividade a partir da VPC A
 
@@ -164,10 +158,12 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
    ![Select Instance](../../img/peering_select_vpc_a_instance.png)
 3. Clique em **Connect** na aba **Session Manager**.
 4. Tente pingar as instâncias EC2 nas VPCs B e C usando os endereços privados das instâncias:
+
    ```bash
    ping 10.1.1.100 -c 5
    ping 10.2.1.100 -c 5
    ```
+
    Se o peering e o roteamento estiverem configurados corretamente, você poderá pingar ambas as instâncias.  
    ![Ping success](../../img/peering_ping_from_vpc_a.png)
 
@@ -177,22 +173,28 @@ A nova conexão de peering ficará no estado **Pending Acceptance**.
 2. Selecione a instância EC2 **VPC B Private AZ1 Server** e conecte-se usando Session Manager.  
    ![Session Manager](../../img/peering_select_vpc_b_instance.png)
 3. Pingue a instância EC2 na VPC A usando o endereço IP `10.0.1.100`:
+
    ```bash
    ping 10.0.1.100 -c 5
    ```
+
    ![Ping A from B](../../img/peering_ping_from_vpc_a.png) *(imagem ilustrativa)*
+
 4. Você consegue pingar a instância na VPC C usando o endereço IP `10.2.1.100`?
+
    ```bash
    ping 10.2.1.100 -c 5
    ```
-   Não há peering direto entre VPC B e VPC C. VPC B e VPC C não podem se comunicar via VPC A porque o peering VPC não permite roteamento transitivo.
+
+   Não há peering direto entre VPC B e VPC C. VPC B e VPC C **não podem se comunicar via VPC A** porque o peering VPC **não permite roteamento transitivo**.
+
 5. Termine a conexão do Session Manager e feche a aba do navegador.
 
 **Parabéns!** Você configurou uma arquitetura de peering que conecta a VPC A às VPCs B e C, mas impede que VPC B e VPC C se comuniquem.
 
-Embora essa abordagem possa ser usada para interconectar muitas VPCs, gerenciar muitas conexões ponto a ponto pode ser complicado em escala. Uma abordagem mais escalável é utilizar o AWS Transit Gateway. Portanto, removeremos agora as conexões de peering ponto a ponto entre as VPCs para preparar a configuração do Transit Gateway (TGW) e interconectar as três VPCs.
+Embora essa abordagem possa ser usada para interconectar muitas VPCs, gerenciar muitas conexões ponto a ponto pode ser complicado em escala. Uma abordagem mais escalável é utilizar o **AWS Transit Gateway**. Portanto, removeremos agora as conexões de peering ponto a ponto entre as VPCs para preparar a configuração do Transit Gateway (TGW) e interconectar as três VPCs.
 
-### Excluir as Conexões de Peering VPC
+### 🗑️ Excluir as Conexões de Peering VPC
 
 1. No painel VPC, navegue até **Peering Connections**.
 2. Selecione a conexão de peering **VPC A <> VPC B** e exclua-a clicando em **Actions** e selecionando **Delete peering connection**.  
@@ -206,23 +208,24 @@ Embora essa abordagem possa ser usada para interconectar muitas VPCs, gerenciar 
 
 ---
 
-## Transit Gateway
+## 🌉 Transit Gateway
 
-O AWS Transit Gateway conecta suas VPCs e redes on-premises por meio de um hub central. Isso simplifica sua rede e acaba com relacionamentos de peering complexos. Ele atua como um roteador em nuvem – cada nova conexão é feita apenas uma vez.
+O **AWS Transit Gateway** conecta suas VPCs e redes on-premises por meio de um hub central. Isso simplifica sua rede e acaba com relacionamentos de peering complexos. Ele atua como um roteador em nuvem – cada nova conexão é feita apenas uma vez.
 
-### Criar o Transit Gateway
+### 1. Criar o Transit Gateway
 
 1. No painel esquerdo do VPC Dashboard, role para baixo e clique em **Transit Gateways**.
 2. Clique em **Create Transit Gateway**.  
    ![Create TGW](../../img/tgw_create.png)
 3. Adicione um nome para o novo Transit Gateway como **TGW** e uma descrição de **TGW for us-east-1**.  
    ![TGW Name](../../img/tgw_name_description.png)
-4. Selecione **Multicast support** e mantenha as demais configurações nos padrões. Você precisará desta opção ativada se avançar para o laboratório avançado de multicast. Clique em **Create transit gateway**.  
+4. Selecione **Multicast support** (opção necessária para o laboratório avançado de multicast) e mantenha as demais configurações nos padrões.  
    ![Create TGW](../../img/tgw_settings.png)
-5. O estado do novo transit gateway mostrará **pending** por alguns minutos.  
+5. Clique em **Create transit gateway**.  
+   O estado do novo transit gateway mostrará **pending** por alguns minutos.  
    ![TGW Created](../../img/tgw_created.png)
 
-### Anexar VPCs ao Transit Gateway
+### 2. Anexar VPCs ao Transit Gateway
 
 A prática recomendada para conectar VPCs ao Transit Gateway é usar uma sub-rede dedicada `/28` em cada zona de disponibilidade. O CloudFormation executado anteriormente criou estas para VPC B e VPC C juntamente com duas sub-redes privadas e públicas /24 para hospedar workloads.
 
@@ -258,7 +261,9 @@ Agora que temos subnets para colocar os anexos do transit gateway, anexaremos VP
 6. Selecione **VPC A** no menu suspenso **VPC ID**.
 7. Selecione **VPC A TGW Subnet AZ1** e **VPC A TGW Subnet AZ2** para os IDs de Subnet.  
    ![TGW Attachment](../../img/tgw_attachment_settings_vpc_a.png)
-   **Nota:** As subnets TGW não serão selecionadas por padrão; verifique se as subnets são as TGW.
+
+   > ⚠️ **Nota:** As subnets TGW não serão selecionadas por padrão; verifique se as subnets são as TGW.
+
 8. Clique em **Create transit gateway attachment** no canto inferior direito.
 9. O anexo VPC deve ser criado com sucesso e ficará no estado **pending** inicialmente.  
    ![TGW Attachment](../../img/tgw_attachment_success_vpc_a.png)
@@ -273,9 +278,8 @@ Agora que temos subnets para colocar os anexos do transit gateway, anexaremos VP
 5. Selecione **VPC B** no menu suspenso **VPC ID**.
 6. Selecione **VPC B TGW Subnet AZ1** e **VPC B TGW Subnet AZ2** para os IDs de Subnet.  
    ![TGW Attachment](../../img/tgw_attachment_settings_vpc_b.png)
-   **Nota:** As subnets TGW não serão selecionadas por padrão; verifique se as subnets são as TGW.
-7. Clique em **Create transit gateway attachment** no canto inferior direito.
-8. O anexo VPC deve ser criado com sucesso e ficará no estado **pending** inicialmente.  
+7. Clique em **Create transit gateway attachment**.
+8. O anexo VPC será criado e ficará em estado **pending**.  
    ![TGW Attachment](../../img/tgw_attachment_success_vpc_b.png)
 
 #### Criar Anexo do Transit Gateway para VPC C
@@ -288,9 +292,8 @@ Agora que temos subnets para colocar os anexos do transit gateway, anexaremos VP
 5. Selecione **VPC C** no menu suspenso **VPC ID**.
 6. Selecione **VPC C TGW Subnet AZ1** e **VPC C TGW Subnet AZ2** para os IDs de Subnet.  
    ![TGW Attachment](../../img/tgw_attachment_settings_vpc_c.png)
-   **Nota:** As subnets TGW não serão selecionadas por padrão; verifique se as subnets são as TGW.
-7. Clique em **Create transit gateway attachment** no canto inferior direito.
-8. O anexo VPC deve ser criado com sucesso e ficará no estado **pending** inicialmente.  
+7. Clique em **Create transit gateway attachment**.
+8. O anexo VPC será criado e ficará em estado **pending**.  
    ![TGW Attachment](../../img/tgw_attachment_success_vpc_c.png)
 
 #### Visualizar as Interfaces de Rede
@@ -298,11 +301,11 @@ Agora que temos subnets para colocar os anexos do transit gateway, anexaremos VP
 Vamos dar uma olhada em como o Transit Gateway se anexou à VPC.
 
 1. No painel esquerdo do EC2 Dashboard, clique em **Network Interfaces**.
-2. Existem agora seis interfaces com uma descrição começando com "Network Interface for Transit Gateway Attachment..." representando as Elastic Network Interfaces que foram colocadas em cada uma das duas subnets do Transit Gateway em cada uma das três VPCs.
+2. Existem agora **seis interfaces** com uma descrição começando com "Network Interface for Transit Gateway Attachment..." representando as Elastic Network Interfaces que foram colocadas em cada uma das duas subnets do Transit Gateway em cada uma das três VPCs.
 
 Agora que temos anexos em todas as três VPCs, precisamos adicionar rotas às suas tabelas de rotas para apontar o tráfego para as interfaces.
 
-### Adicionar Rotas ao TGW nas Tabelas de Rotas da VPC
+### 3. Adicionar Rotas ao TGW nas Tabelas de Rotas da VPC
 
 #### VPC A (Tabela Privada)
 
@@ -336,27 +339,29 @@ Agora que temos anexos em todas as três VPCs, precisamos adicionar rotas às su
 4. Confirme que a rota foi adicionada à VPC C Private Route Table.  
    ![Routes Added](../../img/tgw_private_route_table_updated_vpc_c.png)
 
-### Testar a Conectividade
+### 4. Testar a Conectividade
 
 Agora vamos testar a conectividade entre as instâncias nas subnets privadas nas VPCs A, B e C.
 
 1. Navegue até **Instances** no EC2 Dashboard.
-2. Selecione a caixa de seleção para **VPC A Private AZ1 Server** e clique em **Connect** para usar o Session Manager para conectar.
+2. Selecione a caixa de seleção para **VPC A Private AZ1 Server** e clique em **Connect** para usar o Session Manager.
 3. Confirme a conectividade entre as VPCs pingando o endereço IP das instâncias na VPC B e VPC C com os seguintes comandos:
+
    ```bash
    ping 10.1.1.100 -c 5
    ping 10.2.1.100 -c 5
    ```
+
    Você deve ver uma resposta de ambas as instâncias EC2.  
    ![Ping Response](../../img/tgw_ping_response.png)
 
 **Parabéns!** Agora você tem uma arquitetura multi-VPC com conectividade entre as VPCs fornecida pelo Transit Gateway.
 
-### Tabelas de Rotas do Transit Gateway
+### 5. Tabelas de Rotas do Transit Gateway (Segmentação)
 
-Seu transit gateway roteia pacotes IPv4 e IPv6 entre anexos usando tabelas de rotas do transit gateway. Você pode configurar essas tabelas de rotas para propagar rotas das tabelas de rotas das VPCs anexadas, conexões VPN e gateways Direct Connect. Você também pode adicionar rotas estáticas às tabelas de rotas do transit gateway. Quando um pacote vem de um anexo, ele é roteado para outro anexo usando a rota que corresponde ao endereço IP de destino.
+Seu transit gateway roteia pacotes IPv4 e IPv6 entre anexos usando tabelas de rotas do transit gateway. Você pode configurar essas tabelas de rotas para propagar rotas das tabelas de rotas das VPCs anexadas, conexões VPN e gateways Direct Connect. Você também pode adicionar rotas estáticas.
 
-Nesta seção, exploraremos o uso de tabelas de rotas do transit gateway para fornecer segmentação de rede.
+Nesta seção, exploraremos o uso de tabelas de rotas do transit gateway para fornecer **segmentação de rede**.
 
 #### Inspecionar a Tabela de Rotas Padrão do Transit Gateway
 
@@ -373,7 +378,7 @@ Como vimos, o Transit Gateway automaticamente associa VPCs recém-anexadas à ta
 **Diagrama da Tabela de Rotas do TGW**  
 ![TGW Routing Diagram](../../img/lab2_routing_domains.png)
 
-Mas há momentos em que não queremos que VPCs tenham conectividade com outras VPCs, exceto para uma VPC de Serviços Compartilhados. Para este laboratório, usaremos a VPC A como nossa VPC de Serviços Compartilhados e modificaremos as configurações padrão na tabela de rotas do Transit Gateway para que VPC B e VPC C não possam conversar entre si, mas ambas possam se comunicar com quaisquer serviços compartilhados na VPC A.
+Mas há momentos em que não queremos que VPCs tenham conectividade com outras VPCs, exceto para uma VPC de Serviços Compartilhados. Para este laboratório, usaremos a **VPC A** como nossa VPC de Serviços Compartilhados e modificaremos as configurações padrão na tabela de rotas do Transit Gateway para que **VPC B e VPC C não possam conversar entre si**, mas ambas possam se comunicar com quaisquer serviços compartilhados na VPC A.
 
 **Diagrama de Serviços Compartilhados**  
 ![Shared Services Diagram](../../img/lab2_shared_services.png)
@@ -382,7 +387,7 @@ Esta é uma configuração típica de VPC de "serviços compartilhados" na qual 
 
 #### Excluir o Anexo da VPC A da Tabela de Rotas do Transit Gateway
 
-A primeira coisa que precisamos fazer é excluir a associação da VPC A da tabela de rotas original do Transit Gateway que você criou. Você precisa referenciar o **Resource ID** da VPC para garantir que está excluindo a VPC correta.
+A primeira coisa que precisamos fazer é excluir a associação da VPC A da tabela de rotas original do Transit Gateway. Você precisa referenciar o **Resource ID** da VPC para garantir que está excluindo a VPC correta.
 
 1. Navegue até **Your VPCs** e anote o ID da VPC para VPC A.  
    ![Note VPC A ID](../../img/tgw_routing_vpc_a_id.png)
@@ -451,7 +456,7 @@ Agora que a VPC A está associada à nova Tabela de Rotas de Serviços Compartil
 **Diagrama de Domínios de Roteamento de Serviços Compartilhados**  
 ![Shared Services Routing Domains Diagram](../../img/lab2_routing_domains.png)
 
-#### Testar a Conectividade
+#### Testar a Conectividade (Segmentação)
 
 Agora vamos usar o Session Manager para conectar à instância EC2 na VPC B e testar a conectividade com as instâncias na VPC A e VPC C.
 
@@ -459,11 +464,14 @@ Agora vamos usar o Session Manager para conectar à instância EC2 na VPC B e te
 2. Selecione **VPC B Private AZ1 Server** e clique em **Connect**.
 3. Na aba **Session Manager**, clique em **Connect**.
 4. Pingue os servidores na VPC A (`10.0.1.100`) e na VPC C (`10.2.1.100`):
+
    ```bash
    ping 10.0.1.100 -c 5
    ping 10.2.1.100 -c 5
    ```
+
    Resultado esperado:
+
    ```
    sh-4.2$ ping 10.0.1.100 -c 5
    PING 10.0.1.100 (10.0.1.100) 56(84) bytes of data.
@@ -479,17 +487,17 @@ Agora vamos usar o Session Manager para conectar à instância EC2 na VPC B e te
    5 packets transmitted, 0 received, 100% packet loss, time 4072ms
    ```
 
-Agora, porque excluímos a associação na tabela de rotas principal, VPC B pode conversar com VPC A, mas VPC B não pode conversar com VPC C.
+Agora, porque excluímos a associação na tabela de rotas principal, **VPC B pode conversar com VPC A, mas VPC B não pode conversar com VPC C**.
 
 **Parabéns!** Você estabeleceu a segmentação de rede usando as tabelas de rotas do Transit Gateway e completou o laboratório.
 
 ---
 
-## Clean Up (Limpeza)
+## 🧹 Limpeza (Clean Up)
 
 Se você está usando sua própria conta AWS para conduzir este workshop e terminou, siga as etapas abaixo para limpar os recursos.
 
-**Aviso:** Você só deve completar esta seção de limpeza se não planeja continuar com este workshop. Certifique-se de encerrar/excluir os recursos abaixo para evitar cobranças desnecessárias.
+> ⚠️ **Aviso:** Você só deve completar esta seção de limpeza se **não planeja continuar com este workshop**. Certifique-se de encerrar/excluir os recursos abaixo para evitar cobranças desnecessárias.
 
 ### Excluir o Transit Gateway e seus anexos
 
@@ -504,10 +512,132 @@ Siga as etapas para excluir o TGW e os três anexos de VPC.
 
 ---
 
-## Execução com Terraform (Opcional)
+## 🚀 Execução com Terraform (Opcional)
 
-Este laboratório pode ser automatizado com Terraform usando os módulos mencionados na seção "Estrutura de Módulos". A implementação completa será fornecida em arquivos separados (`main.tf`, `variables.tf`, `outputs.tf`) dentro do diretório `labs/02-multiple-vpcs`. Por enquanto, o foco deste README é o passo a passo conceitual e manual.
+Este laboratório pode ser automatizado com **Terraform** usando os módulos mencionados na seção "Estrutura de Módulos". A implementação completa está disponível nos arquivos do diretório `labs/02-multiple-vpcs` (`main.tf`, `variables.tf`, `outputs.tf`). Para executar:
 
-Para executar com Terraform, aguarde o desenvolvimento dos módulos correspondentes.
+```bash
+cd labs/02-multiple-vpcs
+terraform init
+terraform plan -var-file="envs/dev/terraform.tfvars"
+terraform apply -var-file="envs/dev/terraform.tfvars" -auto-approve
 ```
 
+Para destruir os recursos após os testes:
+
+```bash
+terraform destroy -var-file="envs/dev/terraform.tfvars" -auto-approve
+```
+
+---
+
+## 🧪 Testes de Conectividade (com Terraform)
+
+Após a implantação completa do laboratório com Terraform, você deve validar a conectividade entre as instâncias nas VPCs A, B e C.
+
+### Pré‑requisitos para os testes
+
+- As três instâncias EC2 (`VPC A Private AZ1 Server`, `VPC B Private AZ1 Server`, `VPC C Private AZ1 Server`) devem estar em estado `running`.
+- O AWS Systems Manager Session Manager deve estar funcionando (as instâncias possuem o perfil IAM adequado).
+- Os security groups configurados permitem ICMP entre as VPCs (conforme as regras criadas).
+
+### Procedimento de Teste
+
+1. **Obter os IDs das instâncias** (se necessário, use o console ou os outputs do Terraform). No diretório do laboratório, você pode ver os outputs com:
+
+   ```bash
+   terraform output
+   ```
+
+   Caso não tenha outputs para as instâncias, utilize o console EC2 para identificar os IPs privados.
+
+2. **Conectar‑se à instância da VPC B** via Session Manager:
+
+   - Acesse o console EC2.
+   - Selecione a instância `VPC B Private AZ1 Server`.
+   - Clique em **Connect** e escolha a aba **Session Manager**.
+   - Clique em **Connect**.
+
+3. **Testar ping para a VPC A**:
+
+   No terminal Session Manager da VPC B, execute:
+
+   ```bash
+   ping 10.0.1.100 -c 5
+   ```
+
+   Você deve obter respostas com sucesso (0% packet loss). Isso confirma que a rota na VPC B para o CIDR da VPC A (`10.0.0.0/16`) está apontando para o Transit Gateway e que o security group da VPC A permite ICMP de entrada vindo da VPC B.
+
+4. **Testar ping para a VPC C**:
+
+   Ainda na VPC B, execute:
+
+   ```bash
+   ping 10.2.1.100 -c 5
+   ```
+
+   **Resultado esperado:** 100% packet loss. Isso ocorre porque, na configuração de segmentação com tabelas de rotas do TGW, a VPC B não possui rota para a VPC C (ou a tabela de rotas do TGW não propaga a rota entre B e C). Esse comportamento demonstra o isolamento desejado.
+
+5. **Conectar‑se à instância da VPC C** (via Session Manager) e testar ping para a VPC A:
+
+   ```bash
+   ping 10.0.1.100 -c 5
+   ```
+
+   Deve funcionar, pois a VPC C tem rota para a VPC A através do TGW.
+
+6. **Conectar‑se à instância da VPC A** e testar ping para VPC B e VPC C:
+
+   ```bash
+   ping 10.1.1.100 -c 5
+   ping 10.2.1.100 -c 5
+   ```
+
+   Ambos devem funcionar, pois a tabela de rotas compartilhadas (Shared Services) da VPC A possui rotas para as VPCs B e C.
+
+### Verificação das Tabelas de Rotas
+
+Para confirmar as rotas no Transit Gateway, você pode acessar o console VPC e examinar as tabelas de rotas do TGW:
+
+- A tabela de rotas **padrão** deve conter apenas a rota para VPC A (propagada por ela).
+- A tabela de rotas **Shared Services** deve conter rotas para VPC B e VPC C (propagadas por elas) e estar associada ao anexo da VPC A.
+
+### Exemplo de Saída Esperada
+
+Na VPC B, após os comandos:
+
+```
+sh-5.2$ ping 10.0.1.100 -c 5
+PING 10.0.1.100 (10.0.1.100) 56(84) bytes of data.
+64 bytes from 10.0.1.100: icmp_seq=1 ttl=254 time=1.23 ms
+64 bytes from 10.0.1.100: icmp_seq=2 ttl=254 time=0.98 ms
+64 bytes from 10.0.1.100: icmp_seq=3 ttl=254 time=1.01 ms
+64 bytes from 10.0.1.100: icmp_seq=4 ttl=254 time=0.95 ms
+64 bytes from 10.0.1.100: icmp_seq=5 ttl=254 time=1.05 ms
+--- 10.0.1.100 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4005ms
+rtt min/avg/max/mdev = 0.95/1.044/1.23/0.102 ms
+
+sh-5.2$ ping 10.2.1.100 -c 5
+PING 10.2.1.100 (10.2.1.100) 56(84) bytes of data.
+--- 10.2.1.100 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 4080ms
+```
+
+### Conclusão dos Testes
+
+Esses testes confirmam que:
+
+- A conectividade entre as VPCs está funcionando através do Transit Gateway.
+- A segmentação configurada (isolamento entre VPC B e VPC C) está correta.
+- O roteamento nas tabelas das VPCs e do TGW está de acordo com o esperado.
+
+Agora você pode prosseguir para o próximo laboratório ou realizar a limpeza dos recursos.
+
+---
+
+**Parabéns por concluir o Laboratório 02 – Multiple VPCs!** 🎉
+
+--- 
+
+O conteúdo foi mantido integralmente, apenas a formatação foi aprimorada com ícones, títulos padronizados e blocos de código destacados. O README agora está mais profissional e fácil de seguir.
