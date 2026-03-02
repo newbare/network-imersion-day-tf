@@ -1,6 +1,3 @@
-# Variáveis do laboratório 02-multiple-vpcs
-
-# labs/02-multiple-vpcs/variables.tf
 variable "environment" {
   description = "Ambiente (dev, stage, prod)"
   type        = string
@@ -13,7 +10,7 @@ variable "region" {
 }
 
 variable "availability_zones" {
-  description = "Lista de zonas de disponibilidade (ex: [\"us-east-1a\", \"us-east-1b\"])"
+  description = "Lista de zonas de disponibilidade"
   type        = list(string)
 }
 
@@ -24,7 +21,7 @@ variable "vpc_a_cidr" {
 }
 
 variable "vpc_a_tgw_subnet_cidrs" {
-  description = "Lista de CIDRs para subnets TGW da VPC A (uma por AZ)"
+  description = "Lista de CIDRs para subnets TGW da VPC A"
   type        = list(string)
 }
 
@@ -35,7 +32,7 @@ variable "vpc_b_cidr" {
 }
 
 variable "vpc_b_tgw_subnet_cidrs" {
-  description = "Lista de CIDRs para subnets TGW da VPC B (uma por AZ)"
+  description = "Lista de CIDRs para subnets TGW da VPC B"
   type        = list(string)
 }
 
@@ -46,18 +43,18 @@ variable "vpc_c_cidr" {
 }
 
 variable "vpc_c_tgw_subnet_cidrs" {
-  description = "Lista de CIDRs para subnets TGW da VPC C (uma por AZ)"
+  description = "Lista de CIDRs para subnets TGW da VPC C"
   type        = list(string)
 }
 
-# Tags adicionais (opcional, caso queira sobrescrever algo)
+# Tags adicionais
 variable "tags" {
   description = "Tags adicionais (mescladas com as default_tags)"
   type        = map(string)
   default     = {}
 }
 
-# Transit Gateway (opcional)
+# Transit Gateway
 variable "tgw_name" {
   description = "Nome do Transit Gateway"
   type        = string
@@ -111,7 +108,8 @@ variable "tgw_dns_support" {
   type        = string
   default     = "enable"
 }
-#subnets
+
+# Subnets públicas e privadas
 variable "vpc_a_public_subnet_cidrs" {
   description = "Lista de CIDRs para subnets públicas da VPC A"
   type        = list(string)
@@ -141,7 +139,8 @@ variable "vpc_c_private_subnet_cidrs" {
   description = "Lista de CIDRs para subnets privadas da VPC C"
   type        = list(string)
 }
-# iam role
+
+# IAM
 variable "iam_role_name" {
   description = "Nome da IAM Role para as instâncias do Lab02"
   type        = string
@@ -149,5 +148,27 @@ variable "iam_role_name" {
 
 variable "iam_instance_profile_name" {
   description = "Nome do Instance Profile para o Lab02"
+  type        = string
+}
+
+# 🔹 NOVAS VARIÁVEIS PARA AS INSTÂNCIAS
+variable "instance_type" {
+  description = "Tipo da instância EC2"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "vpc_a_test_instance_ip" {
+  description = "IP privado da instância de teste na VPC A"
+  type        = string
+}
+
+variable "vpc_b_test_instance_ip" {
+  description = "IP privado da instância de teste na VPC B"
+  type        = string
+}
+
+variable "vpc_c_test_instance_ip" {
+  description = "IP privado da instância de teste na VPC C"
   type        = string
 }

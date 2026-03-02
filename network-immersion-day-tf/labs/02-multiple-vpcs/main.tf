@@ -273,3 +273,62 @@ module "sg_vpc_c" {
 
   tags = var.tags
 }
+#ec2 instances
+# Data source da AMI Amazon Linux 2023 (já deve existir no seu main.tf, mas se não, adicione)
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+}
+
+# Instância de teste em VPC A (privada, AZ1)
+module "ec2_a" {
+  source = "../../modules/ec2-instance"
+
+  name                   = "VPC A Private AZ1 Server"
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.instance_type
+  subnet_id              = module.subnets_a.private_subnet_ids[0]  # primeira subnet privada (AZ1)
+  private_ip             = var.vpc_a_test_instance_ip
+  vpc_security_group_ids = [module.sg_vpc_a.security_group_id]
+  iam_instance_profile   = module.iam_roles.instance_profile_name
+  associate_public_ip    = false
+  user_data              = file("${path.module}/user_data.sh")
+  tags                   = var.tags
+}
+
+# Instância de teste em VPC B (privada, AZ1)
+module "ec2_b" {
+  source = "../../modules/ec2-instance"
+
+  name                   = "VPC B Private AZ1 Server"
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.instance_type
+  subnet_id              = module.subnets_b.private_subnet_ids[0]
+  private_ip             = var.vpc_b_test_instance_ip
+  vpc_security_group_ids = [module.sg_vpc_b.security_group_id]
+  iam_instance_profile   = module.iam_roles.instance_profile_name
+  associate_public_ip    = false
+  user_data              = file("${path.module}/user_data.sh")
+  tags                   = var.tags
+}
+
+# Instância de teste em VPC C (privada, AZ1)
+module "ec2_c" {
+  source = "../../modules/ec2-instance"
+
+  name                   = "VPC C Private AZ1 Server"
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.instance_type
+  subnet_id              = module.subnets_c.private_subnet_ids[0]
+  private_ip             = var.vpc_c_test_instance_ip
+  vpc_security_group_ids = [module.sg_vpc_c.security_group_id]
+  iam_instance_profile   = module.iam_roles.instance_profile_name
+  associate_public_ip    = false
+  user_data              = file("${path.module}/user_data.sh")
+  tags                   = var.tags
+}
