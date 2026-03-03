@@ -25,4 +25,4 @@ override.tf.json
 *.log
 *.bak
 *.tmp
-*.pem
+*.pem.terraform.tfstate.lock.info

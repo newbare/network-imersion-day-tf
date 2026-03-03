@@ -1,4 +1,4 @@
-# modules/tgw-routes-tables/main.tf
+# modules/tgw-routes-lab3/main.tf
 
 resource "aws_route" "this" {
   for_each = var.routes

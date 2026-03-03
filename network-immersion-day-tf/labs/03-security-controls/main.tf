@@ -548,3 +548,126 @@ module "sg_rules_vpc_c" {
 
   tags = var.tags
 }
+
+# ----------------------------------------------------------------------
+# SECURITY GROUPS PARA ENDPOINTS SSM (VAZIOS)
+# ----------------------------------------------------------------------
+module "sg_endpoints_a" {
+  source = "../../modules/security-group-lab3"
+
+  name        = "VPC A SSM Endpoints SG"
+  description = "Allow HTTPS from private subnets of VPC A"
+  vpc_id      = module.vpc_a.vpc_id
+  tags        = var.tags
+}
+
+module "sg_endpoints_b" {
+  source = "../../modules/security-group-lab3"
+
+  name        = "VPC B SSM Endpoints SG"
+  description = "Allow HTTPS from private subnets of VPC B"
+  vpc_id      = module.vpc_b.vpc_id
+  tags        = var.tags
+}
+
+module "sg_endpoints_c" {
+  source = "../../modules/security-group-lab3"
+
+  name        = "VPC C SSM Endpoints SG"
+  description = "Allow HTTPS from private subnets of VPC C"
+  vpc_id      = module.vpc_c.vpc_id
+  tags        = var.tags
+}
+
+# ----------------------------------------------------------------------
+# REGRAS DE ENTRADA PARA OS SECURITY GROUPS DOS ENDPOINTS
+# ----------------------------------------------------------------------
+module "sg_endpoints_rules_a" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.sg_endpoints_a.security_group_id
+
+  ingress_rules = {
+    for idx, cidr in var.vpc_a_private_subnet_cidrs : "https-${idx}" => {
+      description = "HTTPS from ${cidr}"
+      ip_protocol = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_ipv4   = cidr
+    }
+  }
+
+  tags = var.tags
+}
+
+module "sg_endpoints_rules_b" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.sg_endpoints_b.security_group_id
+
+  ingress_rules = {
+    for idx, cidr in var.vpc_b_private_subnet_cidrs : "https-${idx}" => {
+      description = "HTTPS from ${cidr}"
+      ip_protocol = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_ipv4   = cidr
+    }
+  }
+
+  tags = var.tags
+}
+
+module "sg_endpoints_rules_c" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.sg_endpoints_c.security_group_id
+
+  ingress_rules = {
+    for idx, cidr in var.vpc_c_private_subnet_cidrs : "https-${idx}" => {
+      description = "HTTPS from ${cidr}"
+      ip_protocol = "tcp"
+      from_port   = 443
+      to_port     = 443
+      cidr_ipv4   = cidr
+    }
+  }
+
+  tags = var.tags
+}
+
+# ----------------------------------------------------------------------
+# VPC ENDPOINTS PARA SSM (INTERFACE)
+# ----------------------------------------------------------------------
+module "endpoints_ssm_a" {
+  source = "../../modules/vpc-endpoints-ssm-lab3"
+
+  vpc_id             = module.vpc_a.vpc_id
+  region             = var.region
+  subnet_ids         = module.subnets_a.private_subnet_ids
+  security_group_ids = [module.sg_endpoints_a.security_group_id]
+  name_prefix        = "VPC-A"
+  tags               = var.tags
+}
+
+module "endpoints_ssm_b" {
+  source = "../../modules/vpc-endpoints-ssm-lab3"
+
+  vpc_id             = module.vpc_b.vpc_id
+  region             = var.region
+  subnet_ids         = module.subnets_b.private_subnet_ids
+  security_group_ids = [module.sg_endpoints_b.security_group_id]
+  name_prefix        = "VPC-B"
+  tags               = var.tags
+}
+
+module "endpoints_ssm_c" {
+  source = "../../modules/vpc-endpoints-ssm-lab3"
+
+  vpc_id             = module.vpc_c.vpc_id
+  region             = var.region
+  subnet_ids         = module.subnets_c.private_subnet_ids
+  security_group_ids = [module.sg_endpoints_c.security_group_id]
+  name_prefix        = "VPC-C"
+  tags               = var.tags
+}
