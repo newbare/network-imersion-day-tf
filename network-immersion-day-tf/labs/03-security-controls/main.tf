@@ -1,7 +1,8 @@
 # Configuração principal do laboratório 03-security-controls
+# SEM NENHUM RESOURCE AVULSO - TUDO MODULARIZADO
 
 # ======================================================================
-# INFRAESTRUTURA BASE DO LABORATÓRIO 03 - SECURITY CONTROLS
+# INFRAESTRUTURA BASE
 # ======================================================================
 
 # ----------------------------------------------------------------------
@@ -17,7 +18,6 @@ module "vpc_a" {
   tags                 = var.tags
 }
 
-# Subnets da VPC A
 module "subnets_a" {
   source = "../../modules/subnets"
 
@@ -29,35 +29,16 @@ module "subnets_a" {
   tags                 = var.tags
 }
 
-# Subnets TGW da VPC A (criadas manualmente porque o módulo vpc já as cria? No módulo vpc atual, ele cria subnets TGW se tgw_subnet_cidrs for passado. Vamos usar essa funcionalidade.)
-# Mas o módulo vpc que você mostrou não tem saída para os IDs das subnets TGW. Vamos precisar ajustar o módulo vpc para exportar esses IDs.
-# Como isso pode ser uma mudança em módulo existente, vamos verificar. No módulo vpc atual, ele cria subnets TGW com resource "aws_subnet" "tgw" e não exporta os IDs. Precisamos adicionar uma output no módulo vpc.
-# Por enquanto, vou considerar que o módulo vpc tem uma output chamada "tgw_subnet_ids". Se não tiver, teremos que criar as subnets TGW manualmente aqui no main.tf.
+module "tgw_subnets_a" {
+  source = "../../modules/tgw-subnets-lab3"
 
-# Para não quebrar a modularidade, sugiro ajustarmos o módulo vpc para exportar tgw_subnet_ids. Mas como combinamos que módulos existentes podem ser ajustados? Acho melhor criar as subnets TGW diretamente no main.tf para não modificar módulos antigos. Vamos seguir essa abordagem para manter o lab 3 independente.
-
-# Subnets TGW da VPC A (criação direta)
-resource "aws_subnet" "vpc_a_tgw_az1" {
-  vpc_id            = module.vpc_a.vpc_id
-  cidr_block        = var.vpc_a_tgw_subnet_cidrs[0]
-  availability_zone = var.availability_zones[0]
-
-  tags = merge(var.tags, {
-    Name = "VPC A TGW Subnet AZ1"
-  })
+  vpc_id             = module.vpc_a.vpc_id
+  subnet_cidrs       = var.vpc_a_tgw_subnet_cidrs
+  availability_zones = var.availability_zones
+  subnet_names       = ["VPC A TGW Subnet AZ1", "VPC A TGW Subnet AZ2"]
+  tags               = var.tags
 }
 
-resource "aws_subnet" "vpc_a_tgw_az2" {
-  vpc_id            = module.vpc_a.vpc_id
-  cidr_block        = var.vpc_a_tgw_subnet_cidrs[1]
-  availability_zone = var.availability_zones[1]
-
-  tags = merge(var.tags, {
-    Name = "VPC A TGW Subnet AZ2"
-  })
-}
-
-# Internet Gateway da VPC A
 module "igw_a" {
   source = "../../modules/internet-gateway"
 
@@ -66,7 +47,6 @@ module "igw_a" {
   tags   = var.tags
 }
 
-# NAT Gateway da VPC A (na primeira subnet pública)
 module "nat_a" {
   source = "../../modules/nat-gateway"
 
@@ -75,7 +55,6 @@ module "nat_a" {
   tags      = var.tags
 }
 
-# Tabelas de rotas da VPC A
 module "route_tables_a" {
   source = "../../modules/route-tables"
 
@@ -113,25 +92,14 @@ module "subnets_b" {
   tags                 = var.tags
 }
 
-# Subnets TGW da VPC B
-resource "aws_subnet" "vpc_b_tgw_az1" {
-  vpc_id            = module.vpc_b.vpc_id
-  cidr_block        = var.vpc_b_tgw_subnet_cidrs[0]
-  availability_zone = var.availability_zones[0]
+module "tgw_subnets_b" {
+  source = "../../modules/tgw-subnets-lab3"
 
-  tags = merge(var.tags, {
-    Name = "VPC B TGW Subnet AZ1"
-  })
-}
-
-resource "aws_subnet" "vpc_b_tgw_az2" {
-  vpc_id            = module.vpc_b.vpc_id
-  cidr_block        = var.vpc_b_tgw_subnet_cidrs[1]
-  availability_zone = var.availability_zones[1]
-
-  tags = merge(var.tags, {
-    Name = "VPC B TGW Subnet AZ2"
-  })
+  vpc_id             = module.vpc_b.vpc_id
+  subnet_cidrs       = var.vpc_b_tgw_subnet_cidrs
+  availability_zones = var.availability_zones
+  subnet_names       = ["VPC B TGW Subnet AZ1", "VPC B TGW Subnet AZ2"]
+  tags               = var.tags
 }
 
 module "igw_b" {
@@ -187,25 +155,14 @@ module "subnets_c" {
   tags                 = var.tags
 }
 
-# Subnets TGW da VPC C
-resource "aws_subnet" "vpc_c_tgw_az1" {
-  vpc_id            = module.vpc_c.vpc_id
-  cidr_block        = var.vpc_c_tgw_subnet_cidrs[0]
-  availability_zone = var.availability_zones[0]
+module "tgw_subnets_c" {
+  source = "../../modules/tgw-subnets-lab3"
 
-  tags = merge(var.tags, {
-    Name = "VPC C TGW Subnet AZ1"
-  })
-}
-
-resource "aws_subnet" "vpc_c_tgw_az2" {
-  vpc_id            = module.vpc_c.vpc_id
-  cidr_block        = var.vpc_c_tgw_subnet_cidrs[1]
-  availability_zone = var.availability_zones[1]
-
-  tags = merge(var.tags, {
-    Name = "VPC C TGW Subnet AZ2"
-  })
+  vpc_id             = module.vpc_c.vpc_id
+  subnet_cidrs       = var.vpc_c_tgw_subnet_cidrs
+  availability_zones = var.availability_zones
+  subnet_names       = ["VPC C TGW Subnet AZ1", "VPC C TGW Subnet AZ2"]
+  tags               = var.tags
 }
 
 module "igw_c" {
@@ -255,21 +212,12 @@ module "tgw" {
   tags                            = var.tags
 }
 
-# Tabelas de rotas do TGW (duas: default e shared services)
-resource "aws_ec2_transit_gateway_route_table" "default" {
+# Módulo para as tabelas de rotas do TGW
+module "tgw_route_tables" {
+  source = "../../modules/tgw-route-tables-lab3"
+
   transit_gateway_id = module.tgw.transit_gateway_id
-
-  tags = merge(var.tags, {
-    Name = "Default TGW Route Table"
-  })
-}
-
-resource "aws_ec2_transit_gateway_route_table" "shared_services" {
-  transit_gateway_id = module.tgw.transit_gateway_id
-
-  tags = merge(var.tags, {
-    Name = "Shared Services TGW Route Table"
-  })
+  tags               = var.tags
 }
 
 # Anexos das VPCs ao TGW
@@ -279,7 +227,7 @@ module "tgw_attachment_a" {
   name               = "VPC A Attachment"
   transit_gateway_id = module.tgw.transit_gateway_id
   vpc_id             = module.vpc_a.vpc_id
-  subnet_ids         = [aws_subnet.vpc_a_tgw_az1.id, aws_subnet.vpc_a_tgw_az2.id]
+  subnet_ids         = module.tgw_subnets_a.subnet_ids
   tags               = var.tags
 }
 
@@ -289,7 +237,7 @@ module "tgw_attachment_b" {
   name               = "VPC B Attachment"
   transit_gateway_id = module.tgw.transit_gateway_id
   vpc_id             = module.vpc_b.vpc_id
-  subnet_ids         = [aws_subnet.vpc_b_tgw_az1.id, aws_subnet.vpc_b_tgw_az2.id]
+  subnet_ids         = module.tgw_subnets_b.subnet_ids
   tags               = var.tags
 }
 
@@ -299,62 +247,74 @@ module "tgw_attachment_c" {
   name               = "VPC C Attachment"
   transit_gateway_id = module.tgw.transit_gateway_id
   vpc_id             = module.vpc_c.vpc_id
-  subnet_ids         = [aws_subnet.vpc_c_tgw_az1.id, aws_subnet.vpc_c_tgw_az2.id]
+  subnet_ids         = module.tgw_subnets_c.subnet_ids
   tags               = var.tags
 }
 
-# Associações e propagações (seguindo o lab 2: VPC A na shared, B e C na default)
-resource "aws_ec2_transit_gateway_route_table_association" "vpc_a" {
-  transit_gateway_attachment_id  = module.tgw_attachment_a.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared_services.id
+# Associações das VPCs às tabelas de rotas
+module "tgw_associations" {
+  source = "../../modules/tgw-associations-lab3"
+
+  associations = {
+    vpc_a = {
+      attachment_id  = module.tgw_attachment_a.attachment_id
+      route_table_id = module.tgw_route_tables.shared_services_route_table_id
+    }
+    vpc_b = {
+      attachment_id  = module.tgw_attachment_b.attachment_id
+      route_table_id = module.tgw_route_tables.default_route_table_id
+    }
+    vpc_c = {
+      attachment_id  = module.tgw_attachment_c.attachment_id
+      route_table_id = module.tgw_route_tables.default_route_table_id
+    }
+  }
+  tags = var.tags
 }
 
-resource "aws_ec2_transit_gateway_route_table_association" "vpc_b" {
-  transit_gateway_attachment_id  = module.tgw_attachment_b.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default.id
-}
+# Propagações
+module "tgw_propagations" {
+  source = "../../modules/tgw-propagations-lab3"
 
-resource "aws_ec2_transit_gateway_route_table_association" "vpc_c" {
-  transit_gateway_attachment_id  = module.tgw_attachment_c.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default.id
-}
-
-# Propagações: VPC A propaga na default, VPC B e C propagam na shared
-resource "aws_ec2_transit_gateway_route_table_propagation" "vpc_a_to_default" {
-  transit_gateway_attachment_id  = module.tgw_attachment_a.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.default.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "vpc_b_to_shared" {
-  transit_gateway_attachment_id  = module.tgw_attachment_b.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared_services.id
-}
-
-resource "aws_ec2_transit_gateway_route_table_propagation" "vpc_c_to_shared" {
-  transit_gateway_attachment_id  = module.tgw_attachment_c.attachment_id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared_services.id
+  propagations = {
+    vpc_a_to_default = {
+      attachment_id  = module.tgw_attachment_a.attachment_id
+      route_table_id = module.tgw_route_tables.default_route_table_id
+    }
+    vpc_b_to_shared = {
+      attachment_id  = module.tgw_attachment_b.attachment_id
+      route_table_id = module.tgw_route_tables.shared_services_route_table_id
+    }
+    vpc_c_to_shared = {
+      attachment_id  = module.tgw_attachment_c.attachment_id
+      route_table_id = module.tgw_route_tables.shared_services_route_table_id
+    }
+  }
+  tags = var.tags
 }
 
 # Rotas nas tabelas privadas das VPCs apontando para o TGW
-resource "aws_route" "vpc_a_to_tgw" {
-  route_table_id         = module.route_tables_a.private_route_table_id
-  destination_cidr_block = "10.0.0.0/8"
-  transit_gateway_id     = module.tgw.transit_gateway_id
-  depends_on             = [module.tgw_attachment_a]
-}
+module "tgw_routes" {
+  source = "../../modules/tgw-routes-lab3"
 
-resource "aws_route" "vpc_b_to_tgw" {
-  route_table_id         = module.route_tables_b.private_route_table_id
-  destination_cidr_block = "10.0.0.0/8"
-  transit_gateway_id     = module.tgw.transit_gateway_id
-  depends_on             = [module.tgw_attachment_b]
-}
+  transit_gateway_id = module.tgw.transit_gateway_id
 
-resource "aws_route" "vpc_c_to_tgw" {
-  route_table_id         = module.route_tables_c.private_route_table_id
-  destination_cidr_block = "10.0.0.0/8"
-  transit_gateway_id     = module.tgw.transit_gateway_id
-  depends_on             = [module.tgw_attachment_c]
+  routes = {
+    vpc_a = {
+      route_table_id         = module.route_tables_a.private_route_table_id
+      destination_cidr_block = "10.0.0.0/8"
+    }
+    vpc_b = {
+      route_table_id         = module.route_tables_b.private_route_table_id
+      destination_cidr_block = "10.0.0.0/8"
+    }
+    vpc_c = {
+      route_table_id         = module.route_tables_c.private_route_table_id
+      destination_cidr_block = "10.0.0.0/8"
+    }
+  }
+
+  tags = var.tags
 }
 
 # ----------------------------------------------------------------------
@@ -369,45 +329,41 @@ module "iam_roles" {
 }
 
 # ----------------------------------------------------------------------
-# SECURITY GROUPS (VAZIOS, APENAS COM DESCRIÇÃO)
+# SECURITY GROUPS (VAZIOS)
 # ----------------------------------------------------------------------
-resource "aws_security_group" "vpc_a_sg" {
+module "security_group_a" {
+  source = "../../modules/security-group-lab3"
+
   name        = "VPC A Security Group"
   description = "Security Group for VPC A instances"
   vpc_id      = module.vpc_a.vpc_id
-
-  tags = merge(var.tags, {
-    Name = "VPC A Security Group"
-  })
+  tags        = var.tags
 }
 
-resource "aws_security_group" "vpc_b_sg" {
+module "security_group_b" {
+  source = "../../modules/security-group-lab3"
+
   name        = "VPC B Security Group"
   description = "Security Group for VPC B instances"
   vpc_id      = module.vpc_b.vpc_id
-
-  tags = merge(var.tags, {
-    Name = "VPC B Security Group"
-  })
+  tags        = var.tags
 }
 
-resource "aws_security_group" "vpc_c_sg" {
+module "security_group_c" {
+  source = "../../modules/security-group-lab3"
+
   name        = "VPC C Security Group"
   description = "Security Group for VPC C instances"
   vpc_id      = module.vpc_c.vpc_id
-
-  tags = merge(var.tags, {
-    Name = "VPC C Security Group"
-  })
+  tags        = var.tags
 }
 
 # ----------------------------------------------------------------------
-# INSTÂNCIAS EC2 (PRIVADAS)
+# INSTÂNCIAS EC2
 # ----------------------------------------------------------------------
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
   owners      = ["amazon"]
-
   filter {
     name   = "name"
     values = ["al2023-ami-2023.*-x86_64"]
@@ -422,7 +378,7 @@ module "ec2_a" {
   instance_type          = var.instance_type
   subnet_id              = module.subnets_a.private_subnet_ids[0]
   private_ip             = var.vpc_a_test_instance_ip
-  vpc_security_group_ids = [aws_security_group.vpc_a_sg.id]
+  vpc_security_group_ids = [module.security_group_a.security_group_id]
   iam_instance_profile   = module.iam_roles.instance_profile_name
   associate_public_ip    = false
   user_data              = file("${path.module}/user_data.sh")
@@ -437,7 +393,7 @@ module "ec2_b" {
   instance_type          = var.instance_type
   subnet_id              = module.subnets_b.private_subnet_ids[0]
   private_ip             = var.vpc_b_test_instance_ip
-  vpc_security_group_ids = [aws_security_group.vpc_b_sg.id]
+  vpc_security_group_ids = [module.security_group_b.security_group_id]
   iam_instance_profile   = module.iam_roles.instance_profile_name
   associate_public_ip    = false
   user_data              = file("${path.module}/user_data.sh")
@@ -452,7 +408,7 @@ module "ec2_c" {
   instance_type          = var.instance_type
   subnet_id              = module.subnets_c.private_subnet_ids[0]
   private_ip             = var.vpc_c_test_instance_ip
-  vpc_security_group_ids = [aws_security_group.vpc_c_sg.id]
+  vpc_security_group_ids = [module.security_group_c.security_group_id]
   iam_instance_profile   = module.iam_roles.instance_profile_name
   associate_public_ip    = false
   user_data              = file("${path.module}/user_data.sh")
@@ -460,7 +416,7 @@ module "ec2_c" {
 }
 
 # ----------------------------------------------------------------------
-# NETWORK ACL DA VPC A (com regras iniciais allow all)
+# NETWORK ACL DA VPC A
 # ----------------------------------------------------------------------
 module "nacl_vpc_a" {
   source = "../../modules/network-acl-lab3"
@@ -495,6 +451,100 @@ module "nacl_vpc_a" {
 }
 
 # ----------------------------------------------------------------------
-# (FUTURO) MÓDULOS PARA SECURITY GROUP RULES E ENDPOINTS
+# REGRAS INICIAIS DOS SECURITY GROUPS
 # ----------------------------------------------------------------------
-# Ainda não implementados. Serão adicionados nas próximas etapas.
+module "sg_rules_vpc_a" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.security_group_a.security_group_id
+
+  ingress_rules = {
+    "icmp-10-0-0-0-8" = {
+      description = "ICMP from 10.0.0.0/8"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "10.0.0.0/8"
+    }
+    "icmp-172-16-0-0-16" = {
+      description = "ICMP from 172.16.0.0/16"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "172.16.0.0/16"
+    }
+    "icmp-participant" = {
+      description = "ICMP from participant IP"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = var.my_ip_cidr
+    }
+  }
+
+  tags = var.tags
+}
+
+module "sg_rules_vpc_b" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.security_group_b.security_group_id
+
+  ingress_rules = {
+    "icmp-10-0-0-0-8" = {
+      description = "ICMP from 10.0.0.0/8"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "10.0.0.0/8"
+    }
+    "icmp-172-16-0-0-16" = {
+      description = "ICMP from 172.16.0.0/16"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "172.16.0.0/16"
+    }
+    "icmp-participant" = {
+      description = "ICMP from participant IP"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = var.my_ip_cidr
+    }
+  }
+
+  tags = var.tags
+}
+
+module "sg_rules_vpc_c" {
+  source = "../../modules/security-group-rules-lab3"
+
+  security_group_id = module.security_group_c.security_group_id
+
+  ingress_rules = {
+    "icmp-10-0-0-0-8" = {
+      description = "ICMP from 10.0.0.0/8"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "10.0.0.0/8"
+    }
+    "icmp-172-16-0-0-16" = {
+      description = "ICMP from 172.16.0.0/16"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = "172.16.0.0/16"
+    }
+    "icmp-participant" = {
+      description = "ICMP from participant IP"
+      ip_protocol = "icmp"
+      from_port   = -1
+      to_port     = -1
+      cidr_ipv4   = var.my_ip_cidr
+    }
+  }
+
+  tags = var.tags
+}
